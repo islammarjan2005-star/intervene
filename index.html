@@ -1,1723 +1,1855 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Intervene - Spaced Repetition Ambush</title>
-    <style>
-        :root {
-            --bg-primary: #0a0a0b;
-            --bg-secondary: #141416;
-            --bg-tertiary: #1c1c1f;
-            --text-primary: #ffffff;
-            --text-secondary: #a1a1aa;
-            --text-muted: #71717a;
-            --accent-green: #22c55e;
-            --accent-yellow: #eab308;
-            --accent-red: #ef4444;
-            --accent-blue: #3b82f6;
-            --border: #27272a;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            min-height: 100dvh;
-            overflow-x: hidden;
-        }
-
-        /* Navigation */
-        .nav {
-            display: flex;
-            justify-content: space-around;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border);
-            padding: 0.5rem 0;
-            z-index: 100;
-        }
-
-        .nav-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            padding: 0.75rem 1.5rem;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.7rem;
-            transition: color 0.2s;
-        }
-
-        .nav-btn.active {
-            color: var(--accent-blue);
-        }
-
-        .nav-btn svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        /* Screens */
-        .screen {
-            display: none;
-            padding: 1.5rem;
-            padding-bottom: 5rem;
-            min-height: 100vh;
-            min-height: 100dvh;
-        }
-
-        .screen.active {
-            display: block;
-        }
-
-        /* Header */
-        .header {
-            margin-bottom: 2rem;
-        }
-
-        .header h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .header p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            padding: 1.25rem;
-        }
-
-        .stat-card h3 {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-card .value {
-            font-size: 2rem;
-            font-weight: 700;
-        }
-
-        .stat-card .value.green { color: var(--accent-green); }
-        .stat-card .value.yellow { color: var(--accent-yellow); }
-        .stat-card .value.red { color: var(--accent-red); }
-        .stat-card .value.blue { color: var(--accent-blue); }
-
-        .stat-card .subtitle {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        /* Struggle List */
-        .struggle-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .struggle-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            background: var(--bg-tertiary);
-            border-radius: 0.5rem;
-        }
-
-        .struggle-item .subject {
-            font-weight: 500;
-        }
-
-        .struggle-item .score {
-            color: var(--accent-red);
-            font-size: 0.875rem;
-        }
-
-        /* Status Banner */
-        .status-banner {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            padding: 1.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-
-        .status-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--accent-red);
-        }
-
-        .status-dot.active {
-            background: var(--accent-green);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .status-text {
-            font-weight: 500;
-        }
-
-        .status-sub {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        /* Toggle Switch */
-        .toggle {
-            position: relative;
-            width: 52px;
-            height: 28px;
-        }
-
-        .toggle input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            inset: 0;
-            background: var(--bg-tertiary);
-            border-radius: 28px;
-            transition: 0.3s;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 3px;
-            bottom: 3px;
-            background: white;
-            border-radius: 50%;
-            transition: 0.3s;
-        }
-
-        .toggle input:checked + .toggle-slider {
-            background: var(--accent-green);
-        }
-
-        .toggle input:checked + .toggle-slider:before {
-            transform: translateX(24px);
-        }
-
-        /* Cards Section */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .section-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-        }
-
-        .card-count {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-
-        /* Card List */
-        .card-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .card-item {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-
-        .card-item:hover {
-            border-color: var(--text-muted);
-        }
-
-        .card-item .question {
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .card-item .meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .card-item .bucket {
-            padding: 0.125rem 0.5rem;
-            border-radius: 9999px;
-            font-size: 0.625rem;
-            text-transform: uppercase;
-        }
-
-        .bucket-0, .bucket-1 { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
-        .bucket-2 { background: rgba(234, 179, 8, 0.2); color: var(--accent-yellow); }
-        .bucket-3, .bucket-4 { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.875rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            width: 100%;
-        }
-
-        .btn-primary {
-            background: var(--accent-blue);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border);
-        }
-
-        /* Form */
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-        }
-
-        .form-input, .form-textarea, .form-select {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 0.75rem;
-            color: var(--text-primary);
-            font-size: 1rem;
-            font-family: inherit;
-        }
-
-        .form-input:focus, .form-textarea:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-        }
-
-        .form-textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .form-select {
-            cursor: pointer;
-        }
-
-        /* Add Card Screen */
-        .add-screen {
-            padding-top: 2rem;
-        }
-
-        .back-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-        }
-
-        /* Import Section */
-        .import-section {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .import-info {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 0.5rem;
-        }
-
-        /* Ambush Modal */
-        .ambush-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: var(--bg-primary);
-            z-index: 1000;
-            flex-direction: column;
-            padding: 1.5rem;
-        }
-
-        .ambush-overlay.active {
-            display: flex;
-        }
-
-        .ambush-header {
-            text-align: center;
-            padding: 1rem 0;
-        }
-
-        .ambush-badge {
-            display: inline-block;
-            padding: 0.375rem 0.75rem;
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--accent-red);
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            animation: shake 0.5s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        .ambush-subject {
-            margin-top: 0.75rem;
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-
-        .ambush-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            text-align: center;
-        }
-
-        .ambush-question {
-            font-size: 1.5rem;
-            font-weight: 600;
-            line-height: 1.4;
-            margin-bottom: 2rem;
-        }
-
-        .ambush-answer {
-            display: none;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .ambush-answer.revealed {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .ambush-answer-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.5rem;
-        }
-
-        .ambush-answer-text {
-            font-size: 1.125rem;
-            color: var(--accent-green);
-        }
-
-        .ambush-actions {
-            padding-bottom: 1rem;
-        }
-
-        .reveal-btn {
-            width: 100%;
-            padding: 1rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 0.75rem;
-            color: var(--text-primary);
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-bottom: 1rem;
-        }
-
-        .confidence-btns {
-            display: none;
-            gap: 0.75rem;
-        }
-
-        .confidence-btns.active {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-        }
-
-        .confidence-btn {
-            padding: 1rem 0.5rem;
-            border-radius: 0.75rem;
-            border: none;
-            font-weight: 600;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .confidence-btn:active {
-            transform: scale(0.95);
-        }
-
-        .confidence-btn.knew {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--accent-green);
-        }
-
-        .confidence-btn.unsure {
-            background: rgba(234, 179, 8, 0.2);
-            color: var(--accent-yellow);
-        }
-
-        .confidence-btn.noidea {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--accent-red);
-        }
-
-        /* Settings */
-        .settings-section {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            margin-bottom: 1rem;
-            overflow: hidden;
-        }
-
-        .settings-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .settings-item:last-child {
-            border-bottom: none;
-        }
-
-        .settings-label {
-            font-weight: 500;
-        }
-
-        .settings-desc {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 0.25rem;
-        }
-
-        .settings-value {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .range-container {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .range-input {
-            width: 120px;
-            accent-color: var(--accent-blue);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--text-muted);
-        }
-
-        .empty-state svg {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-        }
-
-        /* Card Detail Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 500;
-            align-items: flex-end;
-            justify-content: center;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg-secondary);
-            border-radius: 1.5rem 1.5rem 0 0;
-            padding: 1.5rem;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 0.5rem;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1.5rem;
-        }
-
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--accent-red);
-        }
-
-        /* Notification Permission Banner */
-        .permission-banner {
-            display: none;
-            background: var(--bg-secondary);
-            border: 1px solid var(--accent-yellow);
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .permission-banner.show {
-            display: block;
-        }
-
-        .permission-banner p {
-            font-size: 0.875rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .permission-banner .btn {
-            padding: 0.625rem 1rem;
-            font-size: 0.875rem;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
-
-        /* Filter tabs */
-        .filter-tabs {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-        }
-
-        .filter-tab {
-            padding: 0.5rem 1rem;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 9999px;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-
-        .filter-tab.active {
-            background: var(--accent-blue);
-            border-color: var(--accent-blue);
-            color: white;
-        }
-
-        /* Trigger test button */
-        .test-ambush {
-            position: fixed;
-            bottom: 5rem;
-            right: 1rem;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--accent-red);
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-            z-index: 99;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .test-ambush:active {
-            transform: scale(0.95);
-        }
-
-        /* Next ambush countdown */
-        .next-ambush {
-            text-align: center;
-            padding: 0.75rem;
-            background: var(--bg-tertiary);
-            border-radius: 0.75rem;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .next-ambush strong {
-            color: var(--accent-blue);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hadith Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #0d6b3d;
+  --primary-light: #15884e;
+  --accent: #c5a028;
+  --accent-light: #d4b44a;
+  --bg: #faf8f5;
+  --bg-card: #ffffff;
+  --bg-nav: #fefefe;
+  --text: #1a1a2e;
+  --text-secondary: #5a5a6e;
+  --text-muted: #8a8a9e;
+  --border: #e8e4df;
+  --border-accent: #d4c9a8;
+  --shadow: rgba(0,0,0,0.08);
+  --shadow-lg: rgba(0,0,0,0.12);
+  --gradient-gold: linear-gradient(135deg, #c5a028, #d4b44a, #c5a028);
+  --gradient-emerald: linear-gradient(135deg, #0d6b3d, #15884e);
+  --pattern-opacity: 0.04;
+  --skeleton-bg: #eee;
+  --skeleton-shine: #f5f5f5;
+  --toast-bg: #333;
+  --toast-text: #fff;
+  --grade-sahih: #0d6b3d;
+  --grade-hasan: #2563eb;
+  --grade-daif: #d97706;
+}
+
+[data-theme="dark"] {
+  --primary: #2ecc71;
+  --primary-light: #3dd87f;
+  --accent: #f1c40f;
+  --accent-light: #f4d03f;
+  --bg: #1a1a2e;
+  --bg-card: #16213e;
+  --bg-nav: #0f1527;
+  --text: #e8e8f0;
+  --text-secondary: #b0b0c0;
+  --text-muted: #707088;
+  --border: #2a2a4a;
+  --border-accent: #3a3a5a;
+  --shadow: rgba(0,0,0,0.3);
+  --shadow-lg: rgba(0,0,0,0.4);
+  --pattern-opacity: 0.06;
+  --skeleton-bg: #2a2a4a;
+  --skeleton-shine: #3a3a5a;
+  --toast-bg: #e8e8f0;
+  --toast-text: #1a1a2e;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+  padding-bottom: 70px;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(45deg, var(--primary) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--primary) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--primary) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--primary) 75%);
+  background-size: 30px 30px;
+  background-position: 0 0, 0 15px, 15px -15px, -15px 0;
+  opacity: var(--pattern-opacity);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-font="small"] { font-size: 14px; }
+[data-font="medium"] { font-size: 16px; }
+[data-font="large"] { font-size: 18px; }
+
+.app-container {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+/* --- Bottom Navigation --- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg-nav);
+  border-top: 2px solid var(--accent);
+  display: flex;
+  justify-content: space-around;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px var(--shadow);
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px 6px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.2s;
+  flex: 1;
+  gap: 2px;
+}
+
+.nav-btn.active { color: var(--primary); }
+.nav-btn svg { width: 22px; height: 22px; }
+.nav-btn:hover { color: var(--primary); }
+
+/* --- Screens --- */
+.screen { display: none; padding: 16px 0; }
+.screen.active { display: block; }
+
+/* --- Header / Bismillah --- */
+.bismillah {
+  text-align: center;
+  padding: 24px 16px 16px;
+  font-family: 'Amiri', serif;
+  font-size: 2em;
+  color: var(--primary);
+  direction: rtl;
+}
+
+.app-title {
+  text-align: center;
+  font-size: 1.5em;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.app-subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85em;
+  margin-bottom: 20px;
+}
+
+/* --- Ornamental Divider --- */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--accent);
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent), transparent);
+}
+.divider-icon { font-size: 1.2em; }
+
+/* --- Cards --- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px var(--shadow);
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px var(--shadow-lg); }
+
+.card-gold {
+  border-top: 3px solid var(--accent);
+}
+
+.card-gold::before {
+  content: '';
+  position: absolute;
+  top: -3px; left: 20px;
+  width: 40px; height: 3px;
+  background: var(--primary);
+}
+
+/* --- Collection Grid --- */
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.collection-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.collection-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gradient-gold);
+}
+
+.collection-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px var(--shadow-lg);
+  border-color: var(--accent);
+}
+
+.collection-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 1.3em;
+  color: var(--primary);
+  direction: rtl;
+  margin-bottom: 6px;
+}
+
+.collection-name {
+  font-weight: 600;
+  font-size: 0.9em;
+  margin-bottom: 4px;
+}
+
+.collection-count {
+  font-size: 0.75em;
+  color: var(--text-muted);
+}
+
+.collection-progress {
+  margin-top: 8px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.collection-progress-bar {
+  height: 100%;
+  background: var(--gradient-emerald);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+/* --- Section List --- */
+.section-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.section-item:hover {
+  border-color: var(--accent);
+  background: var(--bg);
+}
+
+.section-num {
+  width: 32px; height: 32px;
+  background: var(--gradient-gold);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8em;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.section-name { font-weight: 500; font-size: 0.9em; flex: 1; }
+.section-count-badge {
+  font-size: 0.75em;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* --- Hadith Card --- */
+.hadith-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.hadith-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.hadith-number {
+  width: 36px; height: 36px;
+  background: var(--gradient-gold);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85em;
+}
+
+.hadith-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.hadith-action-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.hadith-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.hadith-action-btn.bookmarked { color: #e74c3c; border-color: #e74c3c; }
+.hadith-action-btn svg { width: 16px; height: 16px; }
+
+.hadith-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 1.35em;
+  line-height: 2;
+  direction: rtl;
+  text-align: right;
+  color: var(--primary);
+  padding: 12px;
+  background: linear-gradient(135deg, transparent, rgba(13,107,61,0.03));
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border-right: 3px solid var(--accent);
+}
+
+.hadith-text {
+  font-size: 0.95em;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.hadith-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.hadith-grade {
+  font-size: 0.7em;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.grade-sahih { background: rgba(13,107,61,0.1); color: var(--grade-sahih); }
+.grade-hasan { background: rgba(37,99,235,0.1); color: var(--grade-hasan); }
+.grade-daif { background: rgba(217,119,6,0.1); color: var(--grade-daif); }
+
+.hadith-ref {
+  font-size: 0.75em;
+  color: var(--text-muted);
+}
+
+/* --- Breadcrumb --- */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85em;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.breadcrumb-link {
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.breadcrumb-link:hover { text-decoration: underline; }
+.breadcrumb-sep { color: var(--text-muted); }
+.breadcrumb-current { color: var(--text-secondary); }
+
+/* --- Search --- */
+.search-container {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 1em;
+  font-family: inherit;
+  background: var(--bg-card);
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.search-icon svg { width: 20px; height: 20px; }
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-select {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85em;
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* --- Stats --- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.5em;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 0.7em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* --- Settings --- */
+.setting-group {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.setting-group-title {
+  font-weight: 600;
+  font-size: 0.85em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.setting-row:last-child { border-bottom: none; }
+
+.setting-label { font-size: 0.9em; }
+
+.toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border);
+  border-radius: 26px;
+  transition: 0.3s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(22px);
+}
+
+.font-size-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.font-size-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.font-size-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* --- Buttons --- */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background: var(--gradient-emerald);
+  color: white;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+.btn-gold {
+  background: var(--gradient-gold);
+  color: white;
+}
+
+.load-more-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+/* --- Skeleton Loading --- */
+.skeleton {
+  background: linear-gradient(90deg, var(--skeleton-bg) 25%, var(--skeleton-shine) 50%, var(--skeleton-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  height: 120px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+}
+
+.skeleton-line {
+  height: 16px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.skeleton-line.short { width: 60%; }
+.skeleton-line.medium { width: 80%; }
+
+/* --- Toast --- */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 0.85em;
+  z-index: 2000;
+  transition: transform 0.3s;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* --- Scroll to top --- */
+.scroll-top {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.scroll-top.visible { display: flex; }
+
+/* --- Empty State --- */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  font-size: 3em;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+
+/* --- Error State --- */
+.error-state {
+  text-align: center;
+  padding: 30px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* --- Recently Viewed --- */
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.recent-item:last-child { border-bottom: none; }
+.recent-item:hover { background: var(--bg); border-radius: 8px; }
+
+.recent-collection {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.recent-text {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Bookmark Filter --- */
+.bookmark-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.bookmark-filter-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.8em;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.bookmark-filter-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* --- Section Title --- */
+.section-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in { animation: fadeIn 0.3s ease-out; }
+
+@keyframes heartPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.heart-pulse { animation: heartPulse 0.3s ease; }
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+  .collections-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .bismillah { font-size: 1.6em; }
+  .hadith-arabic { font-size: 1.2em; }
+}
+
+@media (min-width: 768px) {
+  .collections-grid { grid-template-columns: repeat(3, 1fr); }
+  .app-container { padding: 0 24px; }
+}
+
+/* --- Highlight --- */
+mark {
+  background: rgba(197, 160, 40, 0.3);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* --- About --- */
+.about-link {
+  color: var(--primary);
+  text-decoration: none;
+}
+.about-link:hover { text-decoration: underline; }
+
+/* Hide screens initially */
+#screen-home, #screen-browse, #screen-search, #screen-bookmarks, #screen-settings {
+  display: none;
+}
+</style>
 </head>
-<body>
-    <!-- Dashboard Screen -->
-    <div id="dashboard" class="screen active">
-        <div class="header">
-            <h1>Intervene</h1>
-            <p>Ambush your brain into learning</p>
+<body data-font="medium">
+
+<div class="app-container">
+  <!-- HOME SCREEN -->
+  <div id="screen-home" class="screen">
+    <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+    <div class="app-title">Hadith Explorer</div>
+    <div class="app-subtitle">Explore the wisdom of Prophet Muhammad &#xFDFA;</div>
+
+    <div class="stats-grid" id="home-stats"></div>
+
+    <div class="divider"><span class="divider-icon">&#x2726;</span></div>
+    <div class="section-title">Daily Hadith</div>
+    <div id="daily-hadith-container"></div>
+
+    <div class="divider"><span class="divider-icon">&#x2726;</span></div>
+    <div class="section-title">Recently Viewed</div>
+    <div id="recent-container"></div>
+  </div>
+
+  <!-- BROWSE SCREEN -->
+  <div id="screen-browse" class="screen">
+    <div id="browse-breadcrumb" class="breadcrumb"></div>
+    <div id="browse-content"></div>
+  </div>
+
+  <!-- SEARCH SCREEN -->
+  <div id="screen-search" class="screen">
+    <div class="section-title" style="margin-bottom:12px">Search Hadiths</div>
+    <div class="search-container">
+      <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+      <input type="text" class="search-input" id="search-input" placeholder="Search for hadiths...">
+    </div>
+    <div class="filter-row">
+      <select class="filter-select" id="search-collection-filter">
+        <option value="">All Collections</option>
+      </select>
+    </div>
+    <div id="search-results"></div>
+    <div id="search-status" class="empty-state" style="display:none"></div>
+  </div>
+
+  <!-- BOOKMARKS SCREEN -->
+  <div id="screen-bookmarks" class="screen">
+    <div class="section-title" style="margin-bottom:12px">Bookmarks</div>
+    <div class="bookmark-filters" id="bookmark-filters"></div>
+    <div id="bookmarks-content"></div>
+  </div>
+
+  <!-- SETTINGS SCREEN -->
+  <div id="screen-settings" class="screen">
+    <div class="section-title" style="margin-bottom:16px">Settings</div>
+
+    <div class="setting-group">
+      <div class="setting-group-title">Display</div>
+      <div class="setting-row">
+        <span class="setting-label">Dark Mode</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="theme-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Font Size</span>
+        <div class="font-size-btns">
+          <button class="font-size-btn" data-size="small">A</button>
+          <button class="font-size-btn" data-size="medium">A</button>
+          <button class="font-size-btn" data-size="large">A</button>
         </div>
+      </div>
+    </div>
 
-        <div id="permissionBanner" class="permission-banner">
-            <p>Enable notifications to receive ambush reminders even when the app is in the background.</p>
-            <button class="btn btn-primary" onclick="requestNotificationPermission()">Enable Notifications</button>
-        </div>
+    <div class="setting-group">
+      <div class="setting-group-title">Language</div>
+      <div class="setting-row">
+        <span class="setting-label">Translation Language</span>
+        <select class="filter-select" id="language-select" style="flex:initial;width:140px">
+          <option value="eng">English</option>
+          <option value="ara">Arabic</option>
+          <option value="ben">Bengali</option>
+          <option value="fra">French</option>
+          <option value="ind">Indonesian</option>
+          <option value="rus">Russian</option>
+          <option value="tam">Tamil</option>
+          <option value="tur">Turkish</option>
+          <option value="urd">Urdu</option>
+        </select>
+      </div>
+    </div>
 
-        <div class="status-banner">
-            <div class="status-info">
-                <div id="statusDot" class="status-dot"></div>
-                <div>
-                    <div class="status-text" id="statusText">Ambush Mode Off</div>
-                    <div class="status-sub" id="statusSub">Enable to start learning</div>
-                </div>
-            </div>
-            <label class="toggle">
-                <input type="checkbox" id="ambushToggle" onchange="toggleAmbushMode()">
-                <span class="toggle-slider"></span>
-            </label>
-        </div>
+    <div class="setting-group">
+      <div class="setting-group-title">Data</div>
+      <div class="setting-row">
+        <span class="setting-label">Cache Size</span>
+        <span id="cache-size-display" class="setting-label" style="color:var(--text-muted)">0 KB</span>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Clear Cache</span>
+        <button class="btn btn-outline" id="clear-cache-btn" style="padding:6px 14px;font-size:0.8em">Clear</button>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Export Bookmarks</span>
+        <button class="btn btn-outline" id="export-bookmarks-btn" style="padding:6px 14px;font-size:0.8em">Export</button>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Import Bookmarks</span>
+        <button class="btn btn-outline" id="import-bookmarks-btn" style="padding:6px 14px;font-size:0.8em">Import</button>
+        <input type="file" id="import-file-input" accept=".json" style="display:none">
+      </div>
+    </div>
 
-        <div id="nextAmbush" class="next-ambush" style="display: none;">
-            Next ambush in: <strong id="countdown">--:--</strong>
-        </div>
+    <div class="setting-group">
+      <div class="setting-group-title">About</div>
+      <div style="padding:8px 0;font-size:0.85em;color:var(--text-secondary);line-height:1.6">
+        <strong>Hadith Explorer</strong><br>
+        A beautiful interface for exploring thousands of authenticated Hadiths from major Islamic collections.<br><br>
+        Data provided by <a href="https://github.com/fawazahmed0/hadith-api" class="about-link" target="_blank">Hadith API</a><br>
+        10 Collections &middot; 9 Languages &middot; 30,000+ Hadiths
+      </div>
+    </div>
+  </div>
+</div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Today's Interruptions</h3>
-                <div class="value blue" id="todayInterruptions">0</div>
-                <div class="subtitle">ambushes completed</div>
-            </div>
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-screen="home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="nav-btn" data-screen="browse">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    <span>Browse</span>
+  </button>
+  <button class="nav-btn" data-screen="search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <span>Search</span>
+  </button>
+  <button class="nav-btn" data-screen="bookmarks">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    <span>Bookmarks</span>
+  </button>
+  <button class="nav-btn" data-screen="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>Settings</span>
+  </button>
+</nav>
 
-            <div class="stat-card">
-                <h3>Average Confidence</h3>
-                <div class="value green" id="avgConfidence">--%</div>
-                <div class="subtitle" id="confidenceBreakdown">No data yet</div>
-            </div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-            <div class="stat-card">
-                <h3>Struggle Subjects</h3>
-                <div id="struggleList" class="struggle-list">
-                    <div class="empty-state" style="padding: 1rem;">
-                        <p>No weak spots detected yet</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- Scroll to Top -->
+<button class="scroll-top" id="scroll-top-btn">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18,15 12,9 6,15"/></svg>
+</button>
 
-        <button class="test-ambush" onclick="triggerAmbush()" title="Test Ambush">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-            </svg>
+<script>
+// ============================================================
+// HADITH EXPLORER APPLICATION
+// ============================================================
+
+const COLLECTIONS = {
+  bukhari: { name: 'Sahih al-Bukhari', arabic: 'صحيح البخاري', hadiths: 7563 },
+  muslim: { name: 'Sahih Muslim', arabic: 'صحيح مسلم', hadiths: 7563 },
+  abudawud: { name: 'Sunan Abu Dawud', arabic: 'سنن أبي داود', hadiths: 5274 },
+  tirmidhi: { name: 'Jami at-Tirmidhi', arabic: 'جامع الترمذي', hadiths: 3956 },
+  nasai: { name: "Sunan an-Nasa'i", arabic: 'سنن النسائي', hadiths: 5758 },
+  ibnmajah: { name: 'Sunan Ibn Majah', arabic: 'سنن ابن ماجه', hadiths: 4341 },
+  malik: { name: 'Muwatta Malik', arabic: 'موطأ مالك', hadiths: 1832 },
+  nawawi: { name: "An-Nawawi's 40", arabic: 'الأربعون النووية', hadiths: 42 },
+  qudsi: { name: 'Hadith Qudsi', arabic: 'الأحاديث القدسية', hadiths: 40 },
+  dehlawi: { name: "Dehlawi's 40", arabic: 'الأربعون للدهلوي', hadiths: 40 }
+};
+
+const LANG_EDITIONS = {
+  eng: 'English', ara: 'Arabic', ben: 'Bengali', fra: 'French',
+  ind: 'Indonesian', rus: 'Russian', tam: 'Tamil', tur: 'Turkish', urd: 'Urdu'
+};
+
+// ---- State ----
+const state = {
+  screen: 'home',
+  lang: localStorage.getItem('he_lang') || 'eng',
+  theme: localStorage.getItem('he_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+  fontSize: localStorage.getItem('he_fontSize') || 'medium',
+  bookmarks: JSON.parse(localStorage.getItem('he_bookmarks') || '[]'),
+  readHistory: JSON.parse(localStorage.getItem('he_readHistory') || '[]'),
+  recentViewed: JSON.parse(localStorage.getItem('he_recent') || '[]'),
+  browseState: { level: 'collections', collection: null, section: null, page: 0, data: null },
+  searchDebounce: null,
+  searchCache: {},
+  dailyHadith: null,
+  bookmarkFilter: 'all'
+};
+
+// ---- API Layer ----
+const apiCache = {};
+const API_BASE = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1';
+const API_FALLBACK = 'https://raw.githubusercontent.com/fawazahmed0/hadith-api/1';
+
+async function apiFetch(endpoint) {
+  const url = API_BASE + endpoint;
+  if (apiCache[url]) return apiCache[url];
+
+  // Check localStorage cache
+  const cacheKey = 'he_cache_' + endpoint;
+  const cached = localStorage.getItem(cacheKey);
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached);
+      if (Date.now() - parsed.ts < 86400000) { // 24h
+        apiCache[url] = parsed.data;
+        return parsed.data;
+      }
+    } catch(e) {}
+  }
+
+  // Fetch from CDN, fallback to raw github
+  let data;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('CDN failed');
+    data = await res.json();
+  } catch(e) {
+    const res2 = await fetch(API_FALLBACK + endpoint);
+    if (!res2.ok) throw new Error('API unavailable');
+    data = await res2.json();
+  }
+
+  apiCache[url] = data;
+
+  // Cache in localStorage (with size limit)
+  try {
+    const str = JSON.stringify({ ts: Date.now(), data });
+    if (str.length < 5000000) { // 5MB max per entry
+      localStorage.setItem(cacheKey, str);
+    }
+  } catch(e) {
+    // localStorage full, clear old cache entries
+    clearOldCache();
+  }
+
+  return data;
+}
+
+function clearOldCache() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('he_cache_')) keys.push(key);
+  }
+  // Remove oldest half
+  keys.slice(0, Math.ceil(keys.length / 2)).forEach(k => localStorage.removeItem(k));
+}
+
+// ---- Utility ----
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function saveState() {
+  localStorage.setItem('he_lang', state.lang);
+  localStorage.setItem('he_theme', state.theme);
+  localStorage.setItem('he_fontSize', state.fontSize);
+  localStorage.setItem('he_bookmarks', JSON.stringify(state.bookmarks));
+  localStorage.setItem('he_readHistory', JSON.stringify(state.readHistory));
+  localStorage.setItem('he_recent', JSON.stringify(state.recentViewed));
+}
+
+function isBookmarked(collection, hadithNum) {
+  return state.bookmarks.some(b => b.collection === collection && b.hadithNo === hadithNum);
+}
+
+function toggleBookmark(collection, hadithNum, text, arabicText) {
+  const idx = state.bookmarks.findIndex(b => b.collection === collection && b.hadithNo === hadithNum);
+  if (idx >= 0) {
+    state.bookmarks.splice(idx, 1);
+    showToast('Bookmark removed');
+  } else {
+    if (state.bookmarks.length >= 500) {
+      showToast('Maximum 500 bookmarks reached');
+      return;
+    }
+    state.bookmarks.push({
+      collection, hadithNo: hadithNum, text: (text || '').slice(0, 300),
+      arabicText: (arabicText || '').slice(0, 300),
+      lang: state.lang, date: Date.now(),
+      collectionName: COLLECTIONS[collection]?.name || collection
+    });
+    showToast('Hadith bookmarked!');
+  }
+  saveState();
+}
+
+function trackRead(collection, hadithNum) {
+  const key = collection + ':' + hadithNum;
+  if (!state.readHistory.includes(key)) {
+    state.readHistory.push(key);
+    if (state.readHistory.length > 10000) state.readHistory = state.readHistory.slice(-5000);
+    saveState();
+  }
+}
+
+function addRecentView(collection, hadithNum, text) {
+  state.recentViewed = state.recentViewed.filter(r => !(r.collection === collection && r.hadithNo === hadithNum));
+  state.recentViewed.unshift({
+    collection, hadithNo: hadithNum,
+    text: (text || '').slice(0, 100),
+    collectionName: COLLECTIONS[collection]?.name || collection
+  });
+  state.recentViewed = state.recentViewed.slice(0, 10);
+  saveState();
+}
+
+function getReadCount(collection) {
+  return state.readHistory.filter(k => k.startsWith(collection + ':')).length;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function highlightText(text, query) {
+  if (!query) return escapeHtml(text);
+  const escaped = escapeHtml(text);
+  const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  return escaped.replace(re, '<mark>$1</mark>');
+}
+
+async function shareHadith(collection, hadithNum, text, arabicText) {
+  const collName = COLLECTIONS[collection]?.name || collection;
+  const shareText = `Hadith ${hadithNum} - ${collName}\n\n${arabicText ? arabicText + '\n\n' : ''}${text}\n\n— Source: ${collName}`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: `Hadith ${hadithNum}`, text: shareText });
+      return;
+    } catch(e) {}
+  }
+
+  try {
+    await navigator.clipboard.writeText(shareText);
+    showToast('Copied to clipboard!');
+  } catch(e) {
+    showToast('Could not copy');
+  }
+}
+
+function getGradeClass(grade) {
+  const g = (grade || '').toLowerCase();
+  if (g.includes('sahih')) return 'grade-sahih';
+  if (g.includes('hasan')) return 'grade-hasan';
+  if (g.includes('daif') || g.includes("da'if")) return 'grade-daif';
+  return '';
+}
+
+// ---- Render Hadith Card ----
+function renderHadithCard(hadith, collection, arabicText, query) {
+  const bm = isBookmarked(collection, hadith.hadithnumber);
+  const gradeHtml = hadith.grades && hadith.grades.length > 0
+    ? hadith.grades.map(g => {
+        const name = g.name ? g.name + ': ' : '';
+        const gc = getGradeClass(g.grade);
+        return `<span class="hadith-grade ${gc}">${escapeHtml(name + (g.grade || ''))}</span>`;
+      }).join('')
+    : '';
+
+  const textHtml = query ? highlightText(hadith.text || '', query) : escapeHtml(hadith.text || '');
+
+  return `<div class="hadith-card fade-in" data-collection="${collection}" data-hadith="${hadith.hadithnumber}">
+    <div class="hadith-header">
+      <div class="hadith-number">${hadith.hadithnumber}</div>
+      <div class="hadith-actions">
+        <button class="hadith-action-btn ${bm ? 'bookmarked' : ''}" data-action="bookmark"
+          data-collection="${collection}" data-hadith="${hadith.hadithnumber}"
+          data-text="${escapeHtml((hadith.text || '').slice(0, 300))}"
+          data-arabic="${escapeHtml((arabicText || '').slice(0, 300))}">
+          <svg viewBox="0 0 24 24" fill="${bm ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
         </button>
-    </div>
-
-    <!-- Cards Screen -->
-    <div id="cards" class="screen">
-        <div class="header">
-            <h1>Your Cards</h1>
-            <p>Manage your revision deck</p>
-        </div>
-
-        <div class="filter-tabs" id="filterTabs">
-            <button class="filter-tab active" data-filter="all">All</button>
-        </div>
-
-        <div class="section-header">
-            <span class="section-title">Cards</span>
-            <span class="card-count" id="cardCount">0 cards</span>
-        </div>
-
-        <div id="cardList" class="card-list">
-            <div class="empty-state">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <rect x="3" y="4" width="18" height="16" rx="2"/>
-                    <path d="M7 8h10M7 12h6"/>
-                </svg>
-                <h3>No cards yet</h3>
-                <p>Add your first card to get started</p>
-            </div>
-        </div>
-
-        <div style="margin-top: 1.5rem;">
-            <button class="btn btn-primary" onclick="showScreen('add')">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 5v14M5 12h14"/>
-                </svg>
-                Add New Card
-            </button>
-        </div>
-    </div>
-
-    <!-- Add Card Screen -->
-    <div id="add" class="screen add-screen">
-        <button class="back-btn" onclick="showScreen('cards')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-            Back to Cards
+        <button class="hadith-action-btn" data-action="share"
+          data-collection="${collection}" data-hadith="${hadith.hadithnumber}"
+          data-text="${escapeHtml((hadith.text || '').slice(0, 500))}"
+          data-arabic="${escapeHtml((arabicText || '').slice(0, 500))}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
         </button>
-
-        <div class="header">
-            <h1>Add Card</h1>
-            <p>Create a new revision card</p>
-        </div>
-
-        <form id="addCardForm" onsubmit="addCard(event)">
-            <div class="form-group">
-                <label class="form-label">Subject / Category</label>
-                <input type="text" class="form-input" id="cardSubject" placeholder="e.g., Biology, History, Spanish" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Question</label>
-                <textarea class="form-textarea" id="cardQuestion" placeholder="What do you want to remember?" required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Answer</label>
-                <textarea class="form-textarea" id="cardAnswer" placeholder="The answer to reveal after recall attempt" required></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Add Card</button>
-        </form>
-
-        <div class="import-section">
-            <div class="section-header">
-                <span class="section-title">Import Cards</span>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Paste CSV or JSON</label>
-                <textarea class="form-textarea" id="importData" placeholder="CSV: subject,question,answer (one per line)&#10;JSON: [{&quot;subject&quot;:&quot;...&quot;,&quot;question&quot;:&quot;...&quot;,&quot;answer&quot;:&quot;...&quot;}]"></textarea>
-                <p class="import-info">Supports CSV (comma-separated) or JSON array format</p>
-            </div>
-            <button class="btn btn-secondary" onclick="importCards()">Import Cards</button>
-        </div>
+      </div>
     </div>
-
-    <!-- Settings Screen -->
-    <div id="settings" class="screen">
-        <div class="header">
-            <h1>Settings</h1>
-            <p>Customize your ambush experience</p>
-        </div>
-
-        <div class="settings-section">
-            <div class="settings-item">
-                <div>
-                    <div class="settings-label">Min Interval</div>
-                    <div class="settings-desc">Shortest time between ambushes</div>
-                </div>
-                <div class="range-container">
-                    <span class="settings-value" id="minIntervalValue">1 min</span>
-                    <input type="range" class="range-input" id="minInterval" min="1" max="30" value="1" onchange="updateSettings()">
-                </div>
-            </div>
-
-            <div class="settings-item">
-                <div>
-                    <div class="settings-label">Max Interval</div>
-                    <div class="settings-desc">Longest time between ambushes</div>
-                </div>
-                <div class="range-container">
-                    <span class="settings-value" id="maxIntervalValue">15 min</span>
-                    <input type="range" class="range-input" id="maxInterval" min="5" max="60" value="15" onchange="updateSettings()">
-                </div>
-            </div>
-        </div>
-
-        <div class="settings-section">
-            <div class="settings-item">
-                <div>
-                    <div class="settings-label">Sound Effects</div>
-                    <div class="settings-desc">Play sound on ambush</div>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" id="soundEnabled" checked onchange="updateSettings()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-
-            <div class="settings-item">
-                <div>
-                    <div class="settings-label">Vibration</div>
-                    <div class="settings-desc">Vibrate on ambush</div>
-                </div>
-                <label class="toggle">
-                    <input type="checkbox" id="vibrationEnabled" checked onchange="updateSettings()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-        </div>
-
-        <div class="settings-section">
-            <div class="settings-item">
-                <div>
-                    <div class="settings-label">Export Data</div>
-                    <div class="settings-desc">Download all cards as JSON</div>
-                </div>
-                <button class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem;" onclick="exportData()">Export</button>
-            </div>
-
-            <div class="settings-item">
-                <div>
-                    <div class="settings-label">Clear All Data</div>
-                    <div class="settings-desc">Delete all cards and stats</div>
-                </div>
-                <button class="btn btn-danger" style="width: auto; padding: 0.5rem 1rem;" onclick="clearAllData()">Clear</button>
-            </div>
-        </div>
-
-        <div style="margin-top: 2rem; text-align: center; color: var(--text-muted); font-size: 0.75rem;">
-            <p>Intervene v1.0</p>
-            <p>Transform doomscrolling into micro-learning</p>
-        </div>
+    ${arabicText ? `<div class="hadith-arabic">${escapeHtml(arabicText)}</div>` : ''}
+    <div class="hadith-text">${textHtml}</div>
+    <div class="hadith-meta">
+      ${gradeHtml}
+      <span class="hadith-ref">${COLLECTIONS[collection]?.name || collection} &middot; Book ${hadith.reference?.book || '?'}, Hadith ${hadith.reference?.hadith || hadith.hadithnumber}</span>
     </div>
+  </div>`;
+}
 
-    <!-- Ambush Overlay -->
-    <div id="ambushOverlay" class="ambush-overlay">
-        <div class="ambush-header">
-            <div class="ambush-badge">AMBUSH!</div>
-            <div class="ambush-subject" id="ambushSubject">Subject</div>
-        </div>
+// ---- Navigation ----
+function navigate(screen) {
+  state.screen = screen;
+  document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+  const el = document.getElementById('screen-' + screen);
+  if (el) el.style.display = 'block';
 
-        <div class="ambush-content">
-            <div class="ambush-question" id="ambushQuestion">Question goes here?</div>
-            <div class="ambush-answer" id="ambushAnswer">
-                <div class="ambush-answer-label">Answer</div>
-                <div class="ambush-answer-text" id="ambushAnswerText">Answer goes here</div>
-            </div>
-        </div>
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === screen));
 
-        <div class="ambush-actions">
-            <button class="reveal-btn" id="revealBtn" onclick="revealAnswer()">
-                Tap to Reveal Answer
-            </button>
-            <div class="confidence-btns" id="confidenceBtns">
-                <button class="confidence-btn knew" onclick="recordConfidence(2)">I Knew This</button>
-                <button class="confidence-btn unsure" onclick="recordConfidence(1)">Unsure</button>
-                <button class="confidence-btn noidea" onclick="recordConfidence(0)">No Idea</button>
-            </div>
-        </div>
+  if (screen === 'home') renderHome();
+  if (screen === 'browse') renderBrowse();
+  if (screen === 'search') renderSearch();
+  if (screen === 'bookmarks') renderBookmarks();
+  if (screen === 'settings') renderSettings();
+
+  window.scrollTo(0, 0);
+}
+
+// ---- HOME SCREEN ----
+async function renderHome() {
+  // Stats
+  const totalRead = state.readHistory.length;
+  const totalBookmarks = state.bookmarks.length;
+  const collectionsExplored = new Set(state.readHistory.map(k => k.split(':')[0])).size;
+
+  document.getElementById('home-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${totalRead}</div><div class="stat-label">Hadiths Read</div></div>
+    <div class="stat-card"><div class="stat-value">${totalBookmarks}</div><div class="stat-label">Bookmarks</div></div>
+    <div class="stat-card"><div class="stat-value">${collectionsExplored}</div><div class="stat-label">Collections</div></div>
+  `;
+
+  // Daily Hadith
+  await renderDailyHadith();
+
+  // Recent
+  renderRecent();
+}
+
+async function renderDailyHadith() {
+  const container = document.getElementById('daily-hadith-container');
+  const today = new Date().toISOString().slice(0, 10);
+  const stored = localStorage.getItem('he_daily');
+
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (parsed.date === today && parsed.hadith) {
+        container.innerHTML = renderHadithCard(parsed.hadith, parsed.collection, parsed.arabic);
+        return;
+      }
+    } catch(e) {}
+  }
+
+  container.innerHTML = '<div class="skeleton skeleton-card"></div>';
+
+  try {
+    // Pick a random hadith seeded by date
+    const seed = today.split('-').reduce((a, b) => a + parseInt(b), 0);
+    const collections = ['bukhari', 'muslim'];
+    const coll = collections[seed % 2];
+    const maxH = COLLECTIONS[coll].hadiths;
+    const hadithNo = (seed * 7 + 13) % maxH + 1;
+
+    const editionName = state.lang + '-' + coll;
+    let data;
+    try {
+      data = await apiFetch('/editions/' + editionName + '/' + hadithNo + '.json');
+    } catch(e) {
+      data = await apiFetch('/editions/eng-' + coll + '/' + hadithNo + '.json');
+    }
+
+    let arabicText = '';
+    try {
+      const araData = await apiFetch('/editions/ara-' + coll + '/' + hadithNo + '.json');
+      if (araData && araData.hadiths && araData.hadiths.length > 0) {
+        arabicText = araData.hadiths[0].text;
+      }
+    } catch(e) {}
+
+    const hadith = data.hadiths ? data.hadiths[0] : data;
+    if (hadith) {
+      localStorage.setItem('he_daily', JSON.stringify({ date: today, hadith, collection: coll, arabic: arabicText }));
+      container.innerHTML = renderHadithCard(hadith, coll, arabicText);
+    }
+  } catch(e) {
+    container.innerHTML = '<div class="error-state"><p>Could not load daily hadith</p><button class="btn btn-outline" onclick="renderDailyHadith()">Retry</button></div>';
+  }
+}
+
+function renderRecent() {
+  const container = document.getElementById('recent-container');
+  if (state.recentViewed.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-title">No recent hadiths</div><p>Start browsing to see your history here</p></div>';
+    return;
+  }
+
+  container.innerHTML = '<div class="card">' + state.recentViewed.slice(0, 5).map(r => `
+    <div class="recent-item" data-action="view-recent" data-collection="${r.collection}" data-hadith="${r.hadithNo}">
+      <div class="hadith-number" style="width:28px;height:28px;font-size:0.7em">${r.hadithNo}</div>
+      <div style="flex:1;min-width:0">
+        <div class="recent-collection">${escapeHtml(r.collectionName)}</div>
+        <div class="recent-text">${escapeHtml(r.text)}</div>
+      </div>
     </div>
+  `).join('') + '</div>';
+}
 
-    <!-- Card Detail Modal -->
-    <div id="cardModal" class="modal-overlay" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <span class="modal-title">Card Details</span>
-                <button class="modal-close" onclick="closeCardModal()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 6L6 18M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
+// ---- BROWSE SCREEN ----
+async function renderBrowse() {
+  const bs = state.browseState;
 
-            <div class="form-group">
-                <label class="form-label">Subject</label>
-                <input type="text" class="form-input" id="editSubject">
-            </div>
+  if (bs.level === 'collections') {
+    renderBrowseBreadcrumb([]);
+    renderCollections();
+  } else if (bs.level === 'sections') {
+    renderBrowseBreadcrumb([{ label: COLLECTIONS[bs.collection]?.name || bs.collection }]);
+    await renderSections(bs.collection);
+  } else if (bs.level === 'hadiths') {
+    const sectionName = bs.data?.sectionName || 'Section ' + bs.section;
+    renderBrowseBreadcrumb([
+      { label: COLLECTIONS[bs.collection]?.name || bs.collection, action: 'browse-back-collection' },
+      { label: sectionName }
+    ]);
+    await renderHadithsList(bs.collection, bs.section);
+  }
+}
 
-            <div class="form-group">
-                <label class="form-label">Question</label>
-                <textarea class="form-textarea" id="editQuestion"></textarea>
-            </div>
+function renderBrowseBreadcrumb(items) {
+  const bc = document.getElementById('browse-breadcrumb');
+  let html = '<span class="breadcrumb-link" data-action="browse-home">Collections</span>';
+  items.forEach((item, i) => {
+    html += '<span class="breadcrumb-sep">&rsaquo;</span>';
+    if (i < items.length - 1 && item.action) {
+      html += `<span class="breadcrumb-link" data-action="${item.action}">${escapeHtml(item.label)}</span>`;
+    } else {
+      html += `<span class="breadcrumb-current">${escapeHtml(item.label)}</span>`;
+    }
+  });
+  bc.innerHTML = html;
+}
 
-            <div class="form-group">
-                <label class="form-label">Answer</label>
-                <textarea class="form-textarea" id="editAnswer"></textarea>
-            </div>
+function renderCollections() {
+  const content = document.getElementById('browse-content');
+  let html = '<div class="collections-grid">';
 
-            <div class="form-group">
-                <label class="form-label">Current Bucket</label>
-                <select class="form-select" id="editBucket">
-                    <option value="0">Bucket 0 - New/Struggling</option>
-                    <option value="1">Bucket 1 - Learning</option>
-                    <option value="2">Bucket 2 - Familiar</option>
-                    <option value="3">Bucket 3 - Known</option>
-                    <option value="4">Bucket 4 - Mastered</option>
-                </select>
-            </div>
+  for (const [key, info] of Object.entries(COLLECTIONS)) {
+    const read = getReadCount(key);
+    const pct = Math.min(100, (read / info.hadiths * 100)).toFixed(1);
 
-            <div class="modal-actions">
-                <button class="btn btn-danger" onclick="deleteCard()" style="flex: 1;">Delete</button>
-                <button class="btn btn-primary" onclick="saveCard()" style="flex: 2;">Save Changes</button>
-            </div>
-        </div>
-    </div>
+    html += `<div class="collection-card" data-action="browse-collection" data-collection="${key}">
+      <div class="collection-arabic">${info.arabic}</div>
+      <div class="collection-name">${info.name}</div>
+      <div class="collection-count">${info.hadiths.toLocaleString()} hadiths</div>
+      <div class="collection-progress"><div class="collection-progress-bar" style="width:${pct}%"></div></div>
+      <div class="collection-count" style="margin-top:4px">${read} read (${pct}%)</div>
+    </div>`;
+  }
 
-    <!-- Navigation -->
-    <nav class="nav">
-        <button class="nav-btn active" data-screen="dashboard" onclick="showScreen('dashboard')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                <polyline points="9,22 9,12 15,12 15,22"/>
-            </svg>
-            Dashboard
-        </button>
-        <button class="nav-btn" data-screen="cards" onclick="showScreen('cards')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="16" rx="2"/>
-                <path d="M7 8h10M7 12h6"/>
-            </svg>
-            Cards
-        </button>
-        <button class="nav-btn" data-screen="settings" onclick="showScreen('settings')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-            </svg>
-            Settings
-        </button>
-    </nav>
+  html += '</div>';
+  content.innerHTML = html;
+}
 
-    <script>
-        // State
-        let cards = [];
-        let stats = {
-            today: { date: new Date().toDateString(), interruptions: 0, responses: [] },
-            allTime: { totalInterruptions: 0, responses: [] }
-        };
-        let settings = {
-            minInterval: 1,
-            maxInterval: 15,
-            soundEnabled: true,
-            vibrationEnabled: true,
-            ambushActive: false
-        };
-        let currentCard = null;
-        let editingCardId = null;
-        let ambushTimer = null;
-        let countdownTimer = null;
-        let nextAmbushTime = null;
+async function renderSections(collection) {
+  const content = document.getElementById('browse-content');
+  content.innerHTML = Array(5).fill('<div class="skeleton skeleton-card" style="height:50px"></div>').join('');
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadData();
-            updateUI();
-            checkNotificationPermission();
+  try {
+    const editionName = (state.lang === 'ara' ? 'ara' : state.lang) + '-' + collection;
+    let data;
+    try {
+      data = await apiFetch('/editions/' + editionName + '.json');
+    } catch(e) {
+      data = await apiFetch('/editions/eng-' + collection + '.json');
+    }
 
-            // Register service worker for background notifications
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('data:text/javascript,' + encodeURIComponent(`
-                    self.addEventListener('notificationclick', (event) => {
-                        event.notification.close();
-                        event.waitUntil(clients.matchAll({type: 'window'}).then(clientList => {
-                            for (const client of clientList) {
-                                if ('focus' in client) return client.focus();
-                            }
-                            if (clients.openWindow) return clients.openWindow('/');
-                        }));
-                    });
-                `)).catch(() => {});
-            }
-        });
+    const sections = data.metadata?.sections || {};
+    const sectionDetails = data.metadata?.section_details || {};
 
-        // Data persistence
-        function loadData() {
-            const savedCards = localStorage.getItem('intervene_cards');
-            const savedStats = localStorage.getItem('intervene_stats');
-            const savedSettings = localStorage.getItem('intervene_settings');
+    let html = '';
+    for (const [num, name] of Object.entries(sections)) {
+      if (num === '0' && !name) continue;
+      const detail = sectionDetails[num];
+      const count = detail ? (detail.hadithnumber_last - detail.hadithnumber_first + 1) : '';
 
-            if (savedCards) cards = JSON.parse(savedCards);
-            if (savedStats) {
-                stats = JSON.parse(savedStats);
-                // Reset daily stats if new day
-                if (stats.today.date !== new Date().toDateString()) {
-                    stats.today = { date: new Date().toDateString(), interruptions: 0, responses: [] };
-                }
-            }
-            if (savedSettings) {
-                settings = { ...settings, ...JSON.parse(savedSettings) };
-                document.getElementById('minInterval').value = settings.minInterval;
-                document.getElementById('maxInterval').value = settings.maxInterval;
-                document.getElementById('soundEnabled').checked = settings.soundEnabled;
-                document.getElementById('vibrationEnabled').checked = settings.vibrationEnabled;
-                document.getElementById('ambushToggle').checked = settings.ambushActive;
-                if (settings.ambushActive) {
-                    scheduleAmbush();
-                }
-            }
+      html += `<div class="section-item" data-action="browse-section" data-collection="${collection}" data-section="${num}" data-section-name="${escapeHtml(name || 'Section ' + num)}">
+        <div class="section-num">${num}</div>
+        <div class="section-name">${escapeHtml(name || 'Section ' + num)}</div>
+        ${count ? `<div class="section-count-badge">${count}</div>` : ''}
+      </div>`;
+    }
+
+    content.innerHTML = html || '<div class="empty-state"><div class="empty-state-title">No sections found</div></div>';
+  } catch(e) {
+    content.innerHTML = `<div class="error-state"><p>Could not load sections</p><button class="btn btn-outline" onclick="renderBrowse()">Retry</button></div>`;
+  }
+}
+
+async function renderHadithsList(collection, sectionNo) {
+  const content = document.getElementById('browse-content');
+  const bs = state.browseState;
+
+  if (!bs.data?.hadiths) {
+    content.innerHTML = Array(3).fill('<div class="skeleton skeleton-card"></div>').join('');
+
+    try {
+      const editionName = state.lang + '-' + collection;
+      let data;
+      try {
+        data = await apiFetch('/editions/' + editionName + '/sections/' + sectionNo + '.json');
+      } catch(e) {
+        data = await apiFetch('/editions/eng-' + collection + '/sections/' + sectionNo + '.json');
+      }
+
+      // Fetch Arabic too
+      let arabicData = null;
+      if (state.lang !== 'ara') {
+        try {
+          arabicData = await apiFetch('/editions/ara-' + collection + '/sections/' + sectionNo + '.json');
+        } catch(e) {}
+      }
+
+      bs.data = {
+        ...bs.data,
+        hadiths: data.hadiths || [],
+        arabicHadiths: arabicData?.hadiths || [],
+        sectionName: data.metadata?.section?.[sectionNo] || bs.data?.sectionName || 'Section ' + sectionNo
+      };
+      bs.page = 0;
+    } catch(e) {
+      content.innerHTML = `<div class="error-state"><p>Could not load hadiths</p><button class="btn btn-outline" onclick="renderBrowse()">Retry</button></div>`;
+      return;
+    }
+  }
+
+  const PAGE_SIZE = 20;
+  const hadiths = bs.data.hadiths;
+  const arabicMap = {};
+  (bs.data.arabicHadiths || []).forEach(h => { arabicMap[h.hadithnumber] = h.text; });
+
+  const endIdx = (bs.page + 1) * PAGE_SIZE;
+  const visible = hadiths.slice(0, endIdx);
+
+  let html = '';
+  visible.forEach(h => {
+    const araText = state.lang === 'ara' ? '' : (arabicMap[h.hadithnumber] || '');
+    html += renderHadithCard(h, collection, araText);
+    trackRead(collection, h.hadithnumber);
+    addRecentView(collection, h.hadithnumber, (h.text || '').slice(0, 100));
+  });
+
+  if (endIdx < hadiths.length) {
+    html += `<button class="btn btn-gold load-more-btn" data-action="load-more">Load More (${hadiths.length - endIdx} remaining)</button>`;
+  }
+
+  content.innerHTML = html;
+}
+
+// ---- SEARCH SCREEN ----
+function renderSearch() {
+  const filter = document.getElementById('search-collection-filter');
+  if (filter.children.length <= 1) {
+    let opts = '<option value="">All Collections</option>';
+    for (const [key, info] of Object.entries(COLLECTIONS)) {
+      opts += `<option value="${key}">${info.name}</option>`;
+    }
+    filter.innerHTML = opts;
+  }
+}
+
+async function performSearch(query) {
+  const results = document.getElementById('search-results');
+  const status = document.getElementById('search-status');
+  const collFilter = document.getElementById('search-collection-filter').value;
+
+  if (!query || query.length < 2) {
+    results.innerHTML = '';
+    status.style.display = 'block';
+    status.innerHTML = '<div class="empty-state-title">Type at least 2 characters to search</div>';
+    return;
+  }
+
+  results.innerHTML = Array(3).fill('<div class="skeleton skeleton-card"></div>').join('');
+  status.style.display = 'none';
+
+  const collections = collFilter ? [collFilter] : Object.keys(COLLECTIONS);
+  const queryLower = query.toLowerCase();
+  let allResults = [];
+
+  for (const coll of collections) {
+    try {
+      const editionName = state.lang + '-' + coll;
+      let data;
+
+      // Use search cache
+      const cacheKey = editionName;
+      if (state.searchCache[cacheKey]) {
+        data = state.searchCache[cacheKey];
+      } else {
+        try {
+          data = await apiFetch('/editions/' + editionName + '.json');
+        } catch(e) {
+          data = await apiFetch('/editions/eng-' + coll + '.json');
         }
-
-        function saveData() {
-            localStorage.setItem('intervene_cards', JSON.stringify(cards));
-            localStorage.setItem('intervene_stats', JSON.stringify(stats));
-            localStorage.setItem('intervene_settings', JSON.stringify(settings));
-        }
-
-        // Navigation
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
-            document.getElementById(screenId).classList.add('active');
-            const navBtn = document.querySelector(`[data-screen="${screenId}"]`);
-            if (navBtn) navBtn.classList.add('active');
-
-            if (screenId === 'cards') renderCardList();
-            if (screenId === 'dashboard') updateDashboard();
-        }
-
-        // Card management
-        function addCard(e) {
-            e.preventDefault();
-
-            const card = {
-                id: Date.now().toString(),
-                subject: document.getElementById('cardSubject').value.trim(),
-                question: document.getElementById('cardQuestion').value.trim(),
-                answer: document.getElementById('cardAnswer').value.trim(),
-                bucket: 0,
-                lastReviewed: null,
-                created: new Date().toISOString()
-            };
-
-            cards.push(card);
-            saveData();
-
-            document.getElementById('addCardForm').reset();
-            showScreen('cards');
-        }
-
-        function importCards() {
-            const data = document.getElementById('importData').value.trim();
-            if (!data) return alert('Please paste some data to import');
-
-            try {
-                let importedCards = [];
-
-                // Try JSON first
-                if (data.startsWith('[')) {
-                    const parsed = JSON.parse(data);
-                    importedCards = parsed.map(item => ({
-                        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                        subject: item.subject || 'Imported',
-                        question: item.question,
-                        answer: item.answer,
-                        bucket: 0,
-                        lastReviewed: null,
-                        created: new Date().toISOString()
-                    }));
-                } else {
-                    // Parse as CSV
-                    const lines = data.split('\n').filter(l => l.trim());
-                    importedCards = lines.map(line => {
-                        const parts = line.split(',').map(p => p.trim());
-                        if (parts.length >= 3) {
-                            return {
-                                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                                subject: parts[0],
-                                question: parts[1],
-                                answer: parts[2],
-                                bucket: 0,
-                                lastReviewed: null,
-                                created: new Date().toISOString()
-                            };
-                        }
-                        return null;
-                    }).filter(c => c);
-                }
-
-                if (importedCards.length === 0) {
-                    throw new Error('No valid cards found');
-                }
-
-                cards = [...cards, ...importedCards];
-                saveData();
-                document.getElementById('importData').value = '';
-                alert(`Successfully imported ${importedCards.length} cards!`);
-                showScreen('cards');
-            } catch (err) {
-                alert('Import failed: ' + err.message);
-            }
-        }
-
-        function renderCardList(filter = 'all') {
-            const list = document.getElementById('cardList');
-            const filteredCards = filter === 'all' ? cards : cards.filter(c => c.subject === filter);
-
-            // Update filter tabs
-            const subjects = [...new Set(cards.map(c => c.subject))];
-            const filterTabs = document.getElementById('filterTabs');
-            filterTabs.innerHTML = `<button class="filter-tab ${filter === 'all' ? 'active' : ''}" data-filter="all" onclick="renderCardList('all')">All</button>`;
-            subjects.forEach(subject => {
-                filterTabs.innerHTML += `<button class="filter-tab ${filter === subject ? 'active' : ''}" data-filter="${subject}" onclick="renderCardList('${subject}')">${subject}</button>`;
-            });
-
-            document.getElementById('cardCount').textContent = `${filteredCards.length} cards`;
-
-            if (filteredCards.length === 0) {
-                list.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <rect x="3" y="4" width="18" height="16" rx="2"/>
-                            <path d="M7 8h10M7 12h6"/>
-                        </svg>
-                        <h3>No cards yet</h3>
-                        <p>Add your first card to get started</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const bucketLabels = ['New', 'Learning', 'Familiar', 'Known', 'Mastered'];
-            list.innerHTML = filteredCards.map(card => `
-                <div class="card-item" onclick="openCardModal('${card.id}')">
-                    <div class="question">${escapeHtml(card.question)}</div>
-                    <div class="meta">
-                        <span>${escapeHtml(card.subject)}</span>
-                        <span class="bucket bucket-${card.bucket}">${bucketLabels[card.bucket]}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function openCardModal(cardId) {
-            editingCardId = cardId;
-            const card = cards.find(c => c.id === cardId);
-            if (!card) return;
-
-            document.getElementById('editSubject').value = card.subject;
-            document.getElementById('editQuestion').value = card.question;
-            document.getElementById('editAnswer').value = card.answer;
-            document.getElementById('editBucket').value = card.bucket;
-            document.getElementById('cardModal').classList.add('active');
-        }
-
-        function closeCardModal() {
-            document.getElementById('cardModal').classList.remove('active');
-            editingCardId = null;
-        }
-
-        function closeModal(e) {
-            if (e.target.classList.contains('modal-overlay')) {
-                closeCardModal();
-            }
-        }
-
-        function saveCard() {
-            const card = cards.find(c => c.id === editingCardId);
-            if (!card) return;
-
-            card.subject = document.getElementById('editSubject').value.trim();
-            card.question = document.getElementById('editQuestion').value.trim();
-            card.answer = document.getElementById('editAnswer').value.trim();
-            card.bucket = parseInt(document.getElementById('editBucket').value);
-
-            saveData();
-            closeCardModal();
-            renderCardList();
-        }
-
-        function deleteCard() {
-            if (!confirm('Delete this card?')) return;
-            cards = cards.filter(c => c.id !== editingCardId);
-            saveData();
-            closeCardModal();
-            renderCardList();
-        }
-
-        // Ambush system
-        function toggleAmbushMode() {
-            settings.ambushActive = document.getElementById('ambushToggle').checked;
-            saveData();
-            updateAmbushStatus();
-
-            if (settings.ambushActive) {
-                if (cards.length === 0) {
-                    alert('Add some cards first before enabling ambush mode!');
-                    document.getElementById('ambushToggle').checked = false;
-                    settings.ambushActive = false;
-                    saveData();
-                    return;
-                }
-                scheduleAmbush();
-            } else {
-                clearTimeout(ambushTimer);
-                clearInterval(countdownTimer);
-                document.getElementById('nextAmbush').style.display = 'none';
-            }
-        }
-
-        function updateAmbushStatus() {
-            const dot = document.getElementById('statusDot');
-            const text = document.getElementById('statusText');
-            const sub = document.getElementById('statusSub');
-
-            if (settings.ambushActive) {
-                dot.classList.add('active');
-                text.textContent = 'Ambush Mode Active';
-                sub.textContent = `${cards.length} cards loaded`;
-            } else {
-                dot.classList.remove('active');
-                text.textContent = 'Ambush Mode Off';
-                sub.textContent = 'Enable to start learning';
-            }
-        }
-
-        function scheduleAmbush() {
-            clearTimeout(ambushTimer);
-            clearInterval(countdownTimer);
-
-            if (!settings.ambushActive || cards.length === 0) return;
-
-            // Random interval between min and max (in minutes)
-            const minMs = settings.minInterval * 60 * 1000;
-            const maxMs = settings.maxInterval * 60 * 1000;
-            const delay = Math.random() * (maxMs - minMs) + minMs;
-
-            nextAmbushTime = Date.now() + delay;
-            document.getElementById('nextAmbush').style.display = 'block';
-
-            updateCountdown();
-            countdownTimer = setInterval(updateCountdown, 1000);
-
-            ambushTimer = setTimeout(() => {
-                if (settings.ambushActive) {
-                    triggerAmbush();
-                }
-            }, delay);
-
-            // Send notification if in background
-            if (document.hidden && Notification.permission === 'granted') {
-                setTimeout(() => {
-                    new Notification('Intervene', {
-                        body: 'Time for an ambush! Tap to review.',
-                        icon: '⚡',
-                        requireInteraction: true
-                    });
-                }, delay);
-            }
-        }
-
-        function updateCountdown() {
-            if (!nextAmbushTime) return;
-
-            const remaining = Math.max(0, nextAmbushTime - Date.now());
-            const minutes = Math.floor(remaining / 60000);
-            const seconds = Math.floor((remaining % 60000) / 1000);
-
-            document.getElementById('countdown').textContent =
-                `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        function triggerAmbush() {
-            if (cards.length === 0) return;
-
-            // Select card using weighted random (lower bucket = higher chance)
-            const weights = cards.map(c => 5 - c.bucket);
-            const totalWeight = weights.reduce((a, b) => a + b, 0);
-            let random = Math.random() * totalWeight;
-
-            let selectedCard = cards[0];
-            for (let i = 0; i < cards.length; i++) {
-                random -= weights[i];
-                if (random <= 0) {
-                    selectedCard = cards[i];
-                    break;
-                }
-            }
-
-            currentCard = selectedCard;
-
-            // Show ambush
-            document.getElementById('ambushSubject').textContent = selectedCard.subject;
-            document.getElementById('ambushQuestion').textContent = selectedCard.question;
-            document.getElementById('ambushAnswerText').textContent = selectedCard.answer;
-            document.getElementById('ambushAnswer').classList.remove('revealed');
-            document.getElementById('revealBtn').style.display = 'block';
-            document.getElementById('confidenceBtns').classList.remove('active');
-            document.getElementById('ambushOverlay').classList.add('active');
-
-            // Effects
-            if (settings.vibrationEnabled && navigator.vibrate) {
-                navigator.vibrate([100, 50, 100]);
-            }
-            if (settings.soundEnabled) {
-                playAmbushSound();
-            }
-        }
-
-        function revealAnswer() {
-            document.getElementById('ambushAnswer').classList.add('revealed');
-            document.getElementById('revealBtn').style.display = 'none';
-            document.getElementById('confidenceBtns').classList.add('active');
-        }
-
-        function recordConfidence(level) {
-            // Update card bucket based on confidence
-            // level: 0 = no idea, 1 = unsure, 2 = knew it
-            const card = cards.find(c => c.id === currentCard.id);
-            if (card) {
-                if (level === 2) {
-                    card.bucket = Math.min(4, card.bucket + 1);
-                } else if (level === 0) {
-                    card.bucket = Math.max(0, card.bucket - 1);
-                }
-                card.lastReviewed = new Date().toISOString();
-            }
-
-            // Update stats
-            stats.today.interruptions++;
-            stats.today.responses.push({
-                cardId: currentCard.id,
-                subject: currentCard.subject,
-                confidence: level,
-                timestamp: new Date().toISOString()
-            });
-            stats.allTime.totalInterruptions++;
-            stats.allTime.responses.push({
-                cardId: currentCard.id,
-                subject: currentCard.subject,
-                confidence: level,
-                timestamp: new Date().toISOString()
-            });
-
-            saveData();
-            closeAmbush();
-            updateDashboard();
-
-            // Schedule next ambush
-            if (settings.ambushActive) {
-                scheduleAmbush();
-            }
-        }
-
-        function closeAmbush() {
-            document.getElementById('ambushOverlay').classList.remove('active');
-            currentCard = null;
-        }
-
-        function playAmbushSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-
-                oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-                oscillator.frequency.setValueAtTime(660, audioContext.currentTime + 0.1);
-
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.3);
-            } catch (e) {}
-        }
-
-        // Dashboard
-        function updateDashboard() {
-            // Check if day changed
-            if (stats.today.date !== new Date().toDateString()) {
-                stats.today = { date: new Date().toDateString(), interruptions: 0, responses: [] };
-                saveData();
-            }
-
-            document.getElementById('todayInterruptions').textContent = stats.today.interruptions;
-
-            // Calculate average confidence
-            const responses = stats.today.responses;
-            if (responses.length > 0) {
-                const avgScore = responses.reduce((sum, r) => sum + r.confidence, 0) / responses.length;
-                const percentage = Math.round((avgScore / 2) * 100);
-                document.getElementById('avgConfidence').textContent = percentage + '%';
-
-                const knew = responses.filter(r => r.confidence === 2).length;
-                const unsure = responses.filter(r => r.confidence === 1).length;
-                const noidea = responses.filter(r => r.confidence === 0).length;
-                document.getElementById('confidenceBreakdown').textContent =
-                    `${knew} knew, ${unsure} unsure, ${noidea} no idea`;
-
-                // Color based on percentage
-                const avgEl = document.getElementById('avgConfidence');
-                avgEl.classList.remove('green', 'yellow', 'red');
-                if (percentage >= 70) avgEl.classList.add('green');
-                else if (percentage >= 40) avgEl.classList.add('yellow');
-                else avgEl.classList.add('red');
-            } else {
-                document.getElementById('avgConfidence').textContent = '--%';
-                document.getElementById('confidenceBreakdown').textContent = 'No data yet';
-            }
-
-            // Calculate struggle subjects
-            const subjectScores = {};
-            stats.allTime.responses.forEach(r => {
-                if (!subjectScores[r.subject]) {
-                    subjectScores[r.subject] = { total: 0, score: 0 };
-                }
-                subjectScores[r.subject].total++;
-                subjectScores[r.subject].score += r.confidence;
-            });
-
-            const struggles = Object.entries(subjectScores)
-                .map(([subject, data]) => ({
-                    subject,
-                    avgScore: data.score / data.total,
-                    count: data.total
-                }))
-                .filter(s => s.avgScore < 1.5) // Below 75% confidence
-                .sort((a, b) => a.avgScore - b.avgScore)
-                .slice(0, 3);
-
-            const struggleList = document.getElementById('struggleList');
-            if (struggles.length === 0) {
-                struggleList.innerHTML = `
-                    <div class="empty-state" style="padding: 1rem;">
-                        <p>No weak spots detected yet</p>
-                    </div>
-                `;
-            } else {
-                struggleList.innerHTML = struggles.map(s => `
-                    <div class="struggle-item">
-                        <span class="subject">${escapeHtml(s.subject)}</span>
-                        <span class="score">${Math.round((s.avgScore / 2) * 100)}% confidence</span>
-                    </div>
-                `).join('');
-            }
-
-            updateAmbushStatus();
-        }
-
-        // Settings
-        function updateSettings() {
-            settings.minInterval = parseInt(document.getElementById('minInterval').value);
-            settings.maxInterval = parseInt(document.getElementById('maxInterval').value);
-
-            // Ensure max >= min
-            if (settings.maxInterval < settings.minInterval) {
-                settings.maxInterval = settings.minInterval;
-                document.getElementById('maxInterval').value = settings.maxInterval;
-            }
-
-            settings.soundEnabled = document.getElementById('soundEnabled').checked;
-            settings.vibrationEnabled = document.getElementById('vibrationEnabled').checked;
-
-            document.getElementById('minIntervalValue').textContent = settings.minInterval + ' min';
-            document.getElementById('maxIntervalValue').textContent = settings.maxInterval + ' min';
-
-            saveData();
-        }
-
-        function exportData() {
-            const data = {
-                cards,
-                stats,
-                exportedAt: new Date().toISOString()
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'intervene-backup.json';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function clearAllData() {
-            if (!confirm('This will delete ALL cards and stats. Are you sure?')) return;
-            if (!confirm('Really? This cannot be undone!')) return;
-
-            cards = [];
-            stats = {
-                today: { date: new Date().toDateString(), interruptions: 0, responses: [] },
-                allTime: { totalInterruptions: 0, responses: [] }
-            };
-            saveData();
-            updateUI();
-            alert('All data cleared.');
-        }
-
-        // Notifications
-        function checkNotificationPermission() {
-            if (!('Notification' in window)) return;
-
-            if (Notification.permission === 'default') {
-                document.getElementById('permissionBanner').classList.add('show');
-            }
-        }
-
-        function requestNotificationPermission() {
-            Notification.requestPermission().then(permission => {
-                document.getElementById('permissionBanner').classList.remove('show');
-                if (permission === 'granted') {
-                    new Notification('Intervene', {
-                        body: 'Notifications enabled! Ambushes will find you.'
-                    });
-                }
-            });
-        }
-
-        // Utilities
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function updateUI() {
-            updateSettings();
-            updateDashboard();
-            renderCardList();
-        }
-
-        // Visibility change handler
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && settings.ambushActive) {
-                // Check if we missed an ambush while away
-                if (nextAmbushTime && Date.now() >= nextAmbushTime) {
-                    triggerAmbush();
-                }
-            }
-        });
-    </script>
+        state.searchCache[cacheKey] = data;
+      }
+
+      if (data.hadiths) {
+        const matches = data.hadiths.filter(h =>
+          h.text && h.text.toLowerCase().includes(queryLower)
+        ).slice(0, 10); // Max 10 per collection
+
+        matches.forEach(h => allResults.push({ hadith: h, collection: coll }));
+      }
+    } catch(e) {
+      // Skip failed collections
+    }
+
+    if (allResults.length >= 50) break; // Cap total results
+  }
+
+  if (allResults.length === 0) {
+    results.innerHTML = '';
+    status.style.display = 'block';
+    status.innerHTML = `<div class="empty-state-title">No results found</div><p>Try different keywords or search all collections</p>`;
+    return;
+  }
+
+  // Fetch Arabic for results if needed
+  let html = `<div style="font-size:0.85em;color:var(--text-muted);margin-bottom:12px">${allResults.length} results found</div>`;
+
+  allResults.forEach(r => {
+    html += renderHadithCard(r.hadith, r.collection, '', query);
+  });
+
+  results.innerHTML = html;
+  status.style.display = 'none';
+}
+
+// ---- BOOKMARKS SCREEN ----
+function renderBookmarks() {
+  const filtersEl = document.getElementById('bookmark-filters');
+  const content = document.getElementById('bookmarks-content');
+
+  if (state.bookmarks.length === 0) {
+    filtersEl.innerHTML = '';
+    content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x2661;</div><div class="empty-state-title">No bookmarks yet</div><p>Tap the heart icon on any hadith to save it here</p></div>';
+    return;
+  }
+
+  // Filters
+  const collections = [...new Set(state.bookmarks.map(b => b.collection))];
+  let filterHtml = `<button class="bookmark-filter-btn ${state.bookmarkFilter === 'all' ? 'active' : ''}" data-action="bookmark-filter" data-filter="all">All (${state.bookmarks.length})</button>`;
+  collections.forEach(c => {
+    const count = state.bookmarks.filter(b => b.collection === c).length;
+    filterHtml += `<button class="bookmark-filter-btn ${state.bookmarkFilter === c ? 'active' : ''}" data-action="bookmark-filter" data-filter="${c}">${COLLECTIONS[c]?.name || c} (${count})</button>`;
+  });
+  filtersEl.innerHTML = filterHtml;
+
+  // Filtered bookmarks
+  const filtered = state.bookmarkFilter === 'all'
+    ? state.bookmarks
+    : state.bookmarks.filter(b => b.collection === state.bookmarkFilter);
+
+  let html = '';
+  filtered.forEach(b => {
+    const hadith = { hadithnumber: b.hadithNo, text: b.text, grades: [], reference: {} };
+    html += renderHadithCard(hadith, b.collection, b.arabicText || '');
+  });
+
+  content.innerHTML = html;
+}
+
+// ---- SETTINGS SCREEN ----
+function renderSettings() {
+  document.getElementById('theme-toggle').checked = state.theme === 'dark';
+  document.querySelectorAll('.font-size-btn').forEach(b => b.classList.toggle('active', b.dataset.size === state.fontSize));
+  document.getElementById('language-select').value = state.lang;
+  updateCacheSize();
+}
+
+function updateCacheSize() {
+  let total = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('he_')) {
+      total += (localStorage.getItem(key) || '').length * 2; // ~2 bytes per char
+    }
+  }
+  const display = total < 1024 ? total + ' B'
+    : total < 1048576 ? (total / 1024).toFixed(1) + ' KB'
+    : (total / 1048576).toFixed(1) + ' MB';
+  document.getElementById('cache-size-display').textContent = display;
+}
+
+// ---- Event Delegation ----
+document.addEventListener('click', async function(e) {
+  const btn = e.target.closest('[data-action]');
+  const navBtn = e.target.closest('.nav-btn');
+  const collCard = e.target.closest('.collection-card');
+  const sectionItem = e.target.closest('.section-item');
+
+  // Navigation
+  if (navBtn) {
+    navigate(navBtn.dataset.screen);
+    return;
+  }
+
+  // Collection click
+  if (collCard && !btn) {
+    state.browseState = { level: 'sections', collection: collCard.dataset.collection, section: null, page: 0, data: null };
+    renderBrowse();
+    return;
+  }
+
+  // Section click
+  if (sectionItem && !btn) {
+    state.browseState = {
+      level: 'hadiths',
+      collection: sectionItem.dataset.collection,
+      section: sectionItem.dataset.section,
+      page: 0,
+      data: { sectionName: sectionItem.dataset.sectionName }
+    };
+    renderBrowse();
+    return;
+  }
+
+  if (!btn) return;
+
+  const action = btn.dataset.action;
+
+  if (action === 'bookmark') {
+    toggleBookmark(btn.dataset.collection, parseInt(btn.dataset.hadith), btn.dataset.text, btn.dataset.arabic);
+    // Re-render current view
+    if (state.screen === 'bookmarks') renderBookmarks();
+    else if (state.screen === 'browse') renderBrowse();
+    else if (state.screen === 'home') renderHome();
+    else if (state.screen === 'search') {
+      // Just toggle the button visually
+      btn.classList.toggle('bookmarked');
+      const svg = btn.querySelector('svg');
+      if (svg) svg.setAttribute('fill', btn.classList.contains('bookmarked') ? 'currentColor' : 'none');
+    }
+    btn.classList.add('heart-pulse');
+    setTimeout(() => btn.classList.remove('heart-pulse'), 300);
+  }
+
+  if (action === 'share') {
+    shareHadith(btn.dataset.collection, btn.dataset.hadith, btn.dataset.text, btn.dataset.arabic);
+  }
+
+  if (action === 'browse-home') {
+    state.browseState = { level: 'collections', collection: null, section: null, page: 0, data: null };
+    renderBrowse();
+  }
+
+  if (action === 'browse-back-collection') {
+    state.browseState = { level: 'sections', collection: state.browseState.collection, section: null, page: 0, data: null };
+    renderBrowse();
+  }
+
+  if (action === 'browse-collection') {
+    state.browseState = { level: 'sections', collection: btn.dataset.collection, section: null, page: 0, data: null };
+    renderBrowse();
+  }
+
+  if (action === 'browse-section') {
+    state.browseState = {
+      level: 'hadiths',
+      collection: btn.dataset.collection,
+      section: btn.dataset.section,
+      page: 0,
+      data: { sectionName: btn.dataset.sectionName }
+    };
+    renderBrowse();
+  }
+
+  if (action === 'load-more') {
+    state.browseState.page++;
+    renderHadithsList(state.browseState.collection, state.browseState.section);
+  }
+
+  if (action === 'bookmark-filter') {
+    state.bookmarkFilter = btn.dataset.filter;
+    renderBookmarks();
+  }
+
+  if (action === 'view-recent') {
+    state.browseState = {
+      level: 'hadiths',
+      collection: btn.dataset.collection,
+      section: '1',
+      page: 0,
+      data: null
+    };
+    navigate('browse');
+  }
+});
+
+// Search input
+document.getElementById('search-input').addEventListener('input', function(e) {
+  clearTimeout(state.searchDebounce);
+  state.searchDebounce = setTimeout(() => performSearch(e.target.value.trim()), 300);
+});
+
+document.getElementById('search-collection-filter').addEventListener('change', function() {
+  const q = document.getElementById('search-input').value.trim();
+  if (q) performSearch(q);
+});
+
+// Theme toggle
+document.getElementById('theme-toggle').addEventListener('change', function(e) {
+  state.theme = e.target.checked ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', state.theme);
+  saveState();
+});
+
+// Font size
+document.querySelectorAll('.font-size-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    state.fontSize = this.dataset.size;
+    document.body.setAttribute('data-font', state.fontSize);
+    document.querySelectorAll('.font-size-btn').forEach(b => b.classList.toggle('active', b.dataset.size === state.fontSize));
+    saveState();
+  });
+});
+
+// Language select
+document.getElementById('language-select').addEventListener('change', function(e) {
+  state.lang = e.target.value;
+  state.searchCache = {};
+  saveState();
+  showToast('Language changed to ' + LANG_EDITIONS[state.lang]);
+  if (state.screen === 'browse') {
+    state.browseState.data = null;
+    renderBrowse();
+  }
+});
+
+// Clear cache
+document.getElementById('clear-cache-btn').addEventListener('click', function() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('he_cache_')) keys.push(key);
+  }
+  keys.forEach(k => localStorage.removeItem(k));
+  Object.keys(apiCache).forEach(k => delete apiCache[k]);
+  state.searchCache = {};
+  localStorage.removeItem('he_daily');
+  updateCacheSize();
+  showToast('Cache cleared!');
+});
+
+// Export bookmarks
+document.getElementById('export-bookmarks-btn').addEventListener('click', function() {
+  const data = JSON.stringify(state.bookmarks, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'hadith-bookmarks.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Bookmarks exported!');
+});
+
+// Import bookmarks
+document.getElementById('import-bookmarks-btn').addEventListener('click', function() {
+  document.getElementById('import-file-input').click();
+});
+
+document.getElementById('import-file-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (Array.isArray(imported)) {
+        state.bookmarks = imported;
+        saveState();
+        showToast('Imported ' + imported.length + ' bookmarks!');
+        if (state.screen === 'bookmarks') renderBookmarks();
+      }
+    } catch(e) {
+      showToast('Invalid bookmark file');
+    }
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
+
+// Scroll to top
+window.addEventListener('scroll', function() {
+  document.getElementById('scroll-top-btn').classList.toggle('visible', window.scrollY > 300);
+});
+
+document.getElementById('scroll-top-btn').addEventListener('click', function() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ---- Init ----
+document.documentElement.setAttribute('data-theme', state.theme);
+document.body.setAttribute('data-font', state.fontSize);
+navigate('home');
+</script>
 </body>
 </html>
