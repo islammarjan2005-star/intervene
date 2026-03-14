@@ -1272,12 +1272,84 @@ mark {
 
 @keyframes tapPulse {
   0% { transform: translate(-50%,-50%) scale(1); }
-  50% { transform: translate(-50%,-50%) scale(1.05); }
+  50% { transform: translate(-50%,-50%) scale(1.15); }
   100% { transform: translate(-50%,-50%) scale(1); }
 }
 
 .tasbih-count.pulse {
-  animation: tapPulse 0.15s ease;
+  animation: tapPulse 0.2s ease;
+}
+
+/* --- Tasbih Tap Ripple --- */
+.tasbih-ripple-container {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0; height: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ripple {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 170px; height: 170px;
+  margin-left: -85px; margin-top: -85px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  animation: rippleExpand 0.7s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes rippleExpand {
+  0% { transform: scale(0.4); opacity: 0.5; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* --- Floating Dhikr Particles --- */
+.dhikr-particle {
+  position: absolute;
+  pointer-events: none;
+  font-family: 'Amiri', serif;
+  font-size: 1em;
+  color: var(--accent);
+  direction: rtl;
+  white-space: nowrap;
+  z-index: 10;
+  animation: floatUp 1.4s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% { opacity: 0.9; transform: translateY(0) scale(1); }
+  40% { opacity: 0.7; }
+  100% { opacity: 0; transform: translateY(-130px) scale(0.6); }
+}
+
+/* --- Ring Glow --- */
+.tasbih-counter-ring svg.ring-glow {
+  filter: drop-shadow(0 0 12px var(--primary)) drop-shadow(0 0 24px var(--primary));
+  transition: filter 0.15s ease;
+}
+
+/* --- Completion Burst --- */
+.burst-particle {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  pointer-events: none;
+  animation: burstOut 0.9s ease-out forwards;
+}
+
+@keyframes burstOut {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  60% { opacity: 0.8; }
+  100% { transform: translate(calc(-50% + var(--bx)), calc(-50% + var(--by))) scale(0); opacity: 0; }
+}
+
+.tasbih-counter-ring svg.ring-complete {
+  filter: drop-shadow(0 0 16px var(--accent)) drop-shadow(0 0 32px var(--accent));
+  transition: filter 0.3s ease;
 }
 
 /* --- Onboarding --- */
@@ -1478,6 +1550,7 @@ mark {
           <circle class="ring-bg" cx="100" cy="100" r="85"/>
           <circle class="ring-progress" id="tasbih-ring-progress" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="534"/>
         </svg>
+        <div class="tasbih-ripple-container" id="tasbih-ripple-container"></div>
         <div class="tasbih-count" id="tasbih-count">0</div>
       </div>
       <div class="tasbih-presets" id="tasbih-presets"></div>
@@ -2561,19 +2634,96 @@ function incrementTasbih() {
   state.tasbih.count++;
   state.tasbih.totalAllTime++;
 
+  // Count number pulse
   const countEl = document.getElementById('tasbih-count');
   countEl.classList.remove('pulse');
   void countEl.offsetWidth;
   countEl.classList.add('pulse');
 
+  // Ripple effect
+  spawnRipple();
+
+  // Floating dhikr particle
+  spawnDhikrParticle();
+
+  // Ring glow
+  const svg = document.querySelector('#tasbih-ring svg');
+  svg.classList.add('ring-glow');
+  setTimeout(() => svg.classList.remove('ring-glow'), 300);
+
   const preset = TASBIH_PRESETS[state.tasbih.preset] || TASBIH_PRESETS[0];
   if (state.tasbih.count === preset.target) {
+    spawnCompletionBurst();
+    svg.classList.add('ring-complete');
+    setTimeout(() => svg.classList.remove('ring-complete'), 1200);
+    if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
     showToast(preset.english + ' completed!');
+  } else {
+    if (navigator.vibrate) navigator.vibrate(15);
   }
 
-  if (navigator.vibrate) navigator.vibrate(15);
   updateTasbihDisplay();
   saveState();
+}
+
+function spawnRipple() {
+  const container = document.getElementById('tasbih-ripple-container');
+  const ripple = document.createElement('div');
+  ripple.className = 'ripple';
+  container.appendChild(ripple);
+  ripple.addEventListener('animationend', () => ripple.remove());
+}
+
+function spawnDhikrParticle() {
+  const screen = document.querySelector('.tasbih-screen');
+  const existing = screen.querySelectorAll('.dhikr-particle');
+  if (existing.length >= 5) return;
+
+  const preset = TASBIH_PRESETS[state.tasbih.preset] || TASBIH_PRESETS[0];
+  const particle = document.createElement('div');
+  particle.className = 'dhikr-particle';
+  particle.textContent = preset.arabic;
+
+  // Position above the ring center with random horizontal offset
+  const ring = document.getElementById('tasbih-ring');
+  const ringRect = ring.getBoundingClientRect();
+  const screenRect = screen.getBoundingClientRect();
+  const centerX = ringRect.left - screenRect.left + ringRect.width / 2;
+  const centerY = ringRect.top - screenRect.top + ringRect.height / 2;
+  const offsetX = (Math.random() - 0.5) * 80;
+  const rotation = (Math.random() - 0.5) * 20;
+
+  particle.style.left = centerX + offsetX + 'px';
+  particle.style.top = centerY - 20 + 'px';
+  particle.style.transform = 'translateX(-50%) rotate(' + rotation + 'deg)';
+  particle.style.fontSize = (0.8 + Math.random() * 0.5) + 'em';
+
+  screen.appendChild(particle);
+  particle.addEventListener('animationend', () => particle.remove());
+}
+
+function spawnCompletionBurst() {
+  const ring = document.getElementById('tasbih-ring');
+  const count = 12;
+
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const distance = 80 + Math.random() * 40;
+    const bx = Math.cos(angle) * distance;
+    const by = Math.sin(angle) * distance;
+
+    const particle = document.createElement('div');
+    particle.className = 'burst-particle';
+    particle.style.cssText = `
+      left: 50%; top: 50%;
+      --bx: ${bx}px; --by: ${by}px;
+      width: ${6 + Math.random() * 4}px;
+      height: ${6 + Math.random() * 4}px;
+      animation-duration: ${0.6 + Math.random() * 0.4}s;
+    `;
+    ring.appendChild(particle);
+    particle.addEventListener('animationend', () => particle.remove());
+  }
 }
 
 // ---- Share as Image (Canvas API) ----
