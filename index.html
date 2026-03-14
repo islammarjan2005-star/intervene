@@ -36,6 +36,8 @@
   --grade-daif: #d97706;
   --glow-primary: rgba(10,92,52,0.15);
   --glow-accent: rgba(184,134,11,0.15);
+  --primary-dark: #07432a;
+  --accent-dark: #8a6508;
 }
 
 [data-theme="dark"] {
@@ -72,7 +74,7 @@ body {
   color: var(--text);
   min-height: 100vh;
   transition: background 0.3s, color 0.3s;
-  padding-bottom: 70px;
+  padding-bottom: 85px;
 }
 
 body::before {
@@ -107,7 +109,7 @@ body::after {
   z-index: 1;
   max-width: 800px;
   margin: 0 auto;
-  padding: 0 12px;
+  padding: 0 20px;
 }
 
 /* --- Bottom Navigation --- */
@@ -120,78 +122,133 @@ body::after {
   border-top: 1px solid var(--glass-border);
   display: flex;
   justify-content: space-around;
+  align-items: center;
   z-index: 1000;
   box-shadow: 0 -4px 30px rgba(0,0,0,0.06);
+  padding: 6px 4px max(6px, env(safe-area-inset-bottom, 6px));
 }
 
 .nav-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 4px 4px;
+  padding: 8px 10px 6px;
   background: none;
   border: none;
+  border-radius: 14px;
   color: var(--text-muted);
   font-size: 10px;
   font-family: inherit;
   cursor: pointer;
-  transition: color 0.3s, transform 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex: 1;
-  gap: 2px;
+  gap: 3px;
   position: relative;
 }
 
-.nav-btn.active { color: var(--primary); }
-.nav-btn.active::after {
-  content: '';
-  display: block;
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--primary);
-  box-shadow: 0 0 6px var(--primary);
-  margin-top: 1px;
+.nav-btn.active {
+  color: var(--primary);
+  background: var(--glow-primary);
 }
 .nav-btn.active svg { filter: drop-shadow(0 0 3px var(--glow-primary)); }
-.nav-btn svg { width: 23px; height: 23px; transition: filter 0.3s; }
+.nav-btn svg { width: 22px; height: 22px; transition: all 0.3s; }
+.nav-btn span { font-size: 0.6em; letter-spacing: 0.03em; }
 .nav-btn:hover { color: var(--primary); }
 
 /* --- Screens --- */
-.screen { display: none; padding: 16px 0; will-change: opacity; }
+.screen { display: none; padding: 20px 0; will-change: opacity, transform; }
 .screen.active { display: block; }
 
-/* --- Header / Bismillah --- */
-.bismillah {
+/* --- Hero Header --- */
+.hero-header {
+  background: linear-gradient(170deg, #0a5c34 0%, #07432a 45%, #1a3a28 70%, #2a2a1e 100%);
+  padding: 48px 24px 72px;
   text-align: center;
-  padding: 28px 16px 12px;
-  font-family: 'Amiri', serif;
-  font-size: 2.4em;
-  direction: rtl;
-  background: linear-gradient(135deg, var(--primary), var(--accent), var(--primary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+  position: relative;
+  overflow: hidden;
+  clip-path: ellipse(85% 100% at 50% 0%);
+  margin: -16px -20px 0;
+  margin-bottom: 24px;
+}
+[data-theme="dark"] .hero-header {
+  background: linear-gradient(170deg, #0f2b3d 0%, #0a1929 45%, #111827 70%, #0c1222 100%);
+}
+.hero-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpath d='M40 8l8 14 14 8-14 8-8 14-8-14-14-8 14-8z' fill='none' stroke='%23fff' stroke-width='0.5' opacity='0.08'/%3E%3Cpath d='M0 40l4 7 7 4-7 4-4 7-4-7-7-4 7-4z' fill='none' stroke='%23fff' stroke-width='0.3' opacity='0.06'/%3E%3Cpath d='M80 40l4 7 7 4-7 4-4 7-4-7-7-4 7-4z' fill='none' stroke='%23fff' stroke-width='0.3' opacity='0.06'/%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  pointer-events: none;
+}
+.hero-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(184,134,11,0.6), transparent);
+  border-radius: 2px;
 }
 
-.app-title {
-  text-align: center;
+.hero-bismillah {
+  font-family: 'Amiri', serif;
+  font-size: 2.8em;
+  color: rgba(255,255,255,0.95);
+  direction: rtl;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.hero-title {
   font-size: 1.15em;
   font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 4px;
-  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.15em;
   text-transform: uppercase;
+  margin-bottom: 4px;
 }
 
-.app-subtitle {
-  text-align: center;
-  color: var(--text-muted);
+.hero-subtitle {
+  color: rgba(255,255,255,0.5);
   font-size: 0.82em;
-  margin-bottom: 24px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
 
-/* --- Ornamental Divider --- */
+/* Legacy support */
+.bismillah { display: none; }
+.app-title { display: none; }
+.app-subtitle { display: none; }
+
+/* --- Home Section Spacing --- */
+.home-section {
+  margin-top: 36px;
+}
+
+/* --- Ornamental Divider (new) --- */
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  height: 20px;
+}
+.ornament-divider::before {
+  content: '';
+  display: block;
+  width: 180px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 16'%3E%3Cpath d='M0 8h40q5-6 10 0h80q5-6 10 0h40' fill='none' stroke='%23b8860b' stroke-width='1' opacity='0.5'/%3E%3Cpath d='M0 8h35q8-8 14 0h82q8-8 14 0h35' fill='none' stroke='%23b8860b' stroke-width='0.5' opacity='0.3'/%3E%3Ccircle cx='90' cy='8' r='3' fill='none' stroke='%23b8860b' stroke-width='1' opacity='0.5'/%3E%3Ccircle cx='90' cy='8' r='1.5' fill='%23b8860b' opacity='0.4'/%3E%3Ccircle cx='60' cy='8' r='1.5' fill='%23b8860b' opacity='0.3'/%3E%3Ccircle cx='120' cy='8' r='1.5' fill='%23b8860b' opacity='0.3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+[data-theme="dark"] .ornament-divider::before {
+  filter: hue-rotate(15deg) brightness(1.5);
+}
+
+/* --- Legacy Divider --- */
 .divider {
   display: flex;
   align-items: center;
@@ -220,9 +277,9 @@ body::after {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 12px;
+  border-radius: 18px;
+  padding: 22px;
+  margin-bottom: 16px;
   box-shadow: var(--shadow);
   position: relative;
   transition: transform 0.3s, box-shadow 0.3s;
@@ -246,7 +303,7 @@ body::after {
 .collections-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 14px;
 }
 
 .collection-card {
@@ -254,91 +311,103 @@ body::after {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  padding: 18px 16px;
+  border-radius: 18px;
+  padding: 28px 18px 24px;
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   position: relative;
   overflow: hidden;
+  aspect-ratio: 3/4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.collection-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 8l6 13 13 6-13 6-6 13-6-13-13-6 13-6z' fill='none' stroke='%23888' stroke-width='0.4' opacity='0.1'/%3E%3C/svg%3E");
+  background-size: 60px 60px;
+  pointer-events: none;
 }
 
 .collection-card::after {
   content: '';
   position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--primary), var(--accent));
+  bottom: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  border-radius: 2px;
 }
 
 .collection-card:hover {
-  transform: translateY(-3px) scale(1.01);
+  transform: translateY(-4px) scale(1.02);
   box-shadow: var(--shadow-lg);
-  border-color: var(--glass-border);
 }
+
+.collection-card:nth-child(2n)::before { filter: hue-rotate(40deg); }
+.collection-card:nth-child(3n)::before { filter: hue-rotate(80deg); }
+.collection-card:nth-child(4n)::before { filter: hue-rotate(120deg); }
 
 .collection-arabic {
   font-family: 'Amiri', serif;
-  font-size: 1.3em;
+  font-size: 1.6em;
   color: var(--primary);
   direction: rtl;
-  margin-bottom: 6px;
-  text-shadow: 0 0 20px var(--glow-primary);
+  margin-bottom: 12px;
+  line-height: 1.3;
+  position: relative;
+  z-index: 1;
 }
 
 .collection-name {
   font-weight: 600;
-  font-size: 0.9em;
-  margin-bottom: 4px;
+  font-size: 0.82em;
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
 }
 
 .collection-count {
-  font-size: 0.75em;
+  font-size: 0.72em;
   color: var(--text-muted);
-}
-
-.collection-progress {
-  margin-top: 8px;
-  height: 3px;
-  background: var(--border);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.collection-progress-bar {
-  height: 100%;
-  background: var(--gradient-emerald);
-  border-radius: 3px;
-  transition: width 0.3s;
+  position: relative;
+  z-index: 1;
 }
 
 /* --- Section List --- */
 .section-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 18px 20px;
   background: var(--bg-card);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  margin-bottom: 8px;
+  border-left: 3px solid var(--accent);
+  border-radius: 14px;
+  margin-bottom: 10px;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .section-item:hover {
-  border-color: var(--border-accent);
+  border-left-color: var(--primary);
   box-shadow: var(--shadow);
   transform: translateX(4px);
 }
 
 .section-num {
-  width: 32px; height: 32px;
+  width: 36px; height: 36px;
   background: var(--gradient-gold);
   color: #fff;
-  border-radius: 50%;
+  clip-path: polygon(50% 0%, 85% 15%, 100% 50%, 85% 85%, 50% 100%, 15% 85%, 0% 50%, 15% 15%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -362,11 +431,9 @@ body::after {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  border-left: 3px solid;
-  border-image: linear-gradient(to bottom, var(--accent), var(--primary)) 1;
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 14px;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 20px;
   box-shadow: var(--shadow);
   transition: transform 0.3s, box-shadow 0.3s;
 }
@@ -380,14 +447,14 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .hadith-number {
-  width: 36px; height: 36px;
+  width: 44px; height: 44px;
   background: var(--gradient-gold);
   color: #fff;
-  border-radius: 50%;
+  clip-path: polygon(50% 0%, 85% 15%, 100% 50%, 85% 85%, 50% 100%, 15% 85%, 0% 50%, 15% 15%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -418,32 +485,51 @@ body::after {
 
 .hadith-arabic {
   font-family: 'Amiri', serif;
-  font-size: 1.35em;
-  line-height: 2.2;
+  font-size: 1.5em;
+  line-height: 2.4;
   direction: rtl;
-  text-align: right;
+  text-align: center;
   color: var(--primary);
-  padding: 20px;
-  background: linear-gradient(135deg, transparent, var(--glow-primary));
-  border-radius: 10px;
-  margin-bottom: 14px;
-  border-right: 3px solid;
-  border-image: linear-gradient(to bottom, var(--accent), var(--primary)) 1;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  padding: 28px 24px;
+  background: linear-gradient(135deg, rgba(245,240,230,0.5), rgba(255,252,245,0.3));
+  border-radius: 14px;
+  margin: 16px 0;
+  border: 1px solid rgba(184,134,11,0.12);
+  position: relative;
 }
+[data-theme="dark"] .hadith-arabic {
+  background: linear-gradient(135deg, rgba(30,40,65,0.5), rgba(22,33,62,0.3));
+  border-color: rgba(245,158,11,0.12);
+}
+.hadith-arabic::before, .hadith-arabic::after {
+  content: '';
+  display: block;
+  width: 120px;
+  height: 8px;
+  margin: 0 auto;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 8'%3E%3Cpath d='M0 4h30q5-3 8 0h44q5-3 8 0h30' fill='none' stroke='%23b8860b' stroke-width='0.8' opacity='0.35'/%3E%3Ccircle cx='60' cy='4' r='2' fill='%23b8860b' opacity='0.3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+.hadith-arabic::before { margin-bottom: 12px; }
+.hadith-arabic::after { margin-top: 12px; }
 
 .hadith-text {
-  font-size: 0.95em;
-  line-height: 1.7;
+  font-size: 1em;
+  line-height: 1.85;
   color: var(--text);
+  padding: 4px 0;
 }
 
 .hadith-meta {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 16px;
   flex-wrap: wrap;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 .hadith-grade {
@@ -491,9 +577,9 @@ body::after {
 
 .search-input {
   width: 100%;
-  padding: 14px 16px 14px 44px;
+  padding: 16px 18px 16px 48px;
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
+  border-radius: 18px;
   font-size: 1em;
   font-family: inherit;
   background: var(--bg-card);
@@ -501,13 +587,13 @@ body::after {
   -webkit-backdrop-filter: blur(12px);
   color: var(--text);
   transition: all 0.3s;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: var(--shadow);
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--glow-primary), inset 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 0 0 4px var(--glow-primary), var(--shadow);
 }
 
 .search-icon {
@@ -548,8 +634,8 @@ body::after {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
 .stat-card {
@@ -557,24 +643,33 @@ body::after {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 14px 12px;
+  border-radius: 16px;
+  padding: 20px 14px;
   text-align: center;
 }
 
+.stat-icon {
+  font-size: 1.6em;
+  margin-bottom: 6px;
+  display: block;
+}
+
 .stat-value {
-  font-size: 1.5em;
+  font-size: 2em;
   font-weight: 700;
   background: linear-gradient(135deg, var(--primary), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.2;
 }
 
 .stat-label {
   font-size: 0.7em;
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* --- Settings --- */
@@ -583,9 +678,9 @@ body::after {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 12px;
+  border-radius: 18px;
+  padding: 22px;
+  margin-bottom: 16px;
   box-shadow: var(--shadow);
 }
 
@@ -675,9 +770,9 @@ body::after {
 
 /* --- Buttons --- */
 .btn {
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 10px;
+  border-radius: 14px;
   font-family: inherit;
   font-size: 0.9em;
   cursor: pointer;
@@ -833,20 +928,22 @@ body::after {
 .recent-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
+  gap: 14px;
+  padding: 14px 12px;
   border-bottom: 1px solid var(--border);
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 .recent-item:last-child { border-bottom: none; }
-.recent-item:hover { background: var(--bg); border-radius: 8px; }
+.recent-item:hover { background: var(--bg); border-radius: 10px; }
 
 .recent-collection {
-  font-size: 0.7em;
+  font-size: 0.65em;
   text-transform: uppercase;
   color: var(--accent);
   font-weight: 600;
+  letter-spacing: 0.06em;
 }
 
 .recent-text {
@@ -855,6 +952,7 @@ body::after {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.4;
 }
 
 /* --- Bookmark Filter --- */
@@ -887,22 +985,80 @@ body::after {
 
 /* --- Section Title --- */
 .section-title {
-  font-size: 1.05em;
+  font-size: 1.1em;
   font-weight: 600;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   color: var(--text);
   position: relative;
-  padding-bottom: 8px;
-  letter-spacing: 0.02em;
+  padding-bottom: 10px;
+  letter-spacing: 0.04em;
 }
 
 .section-title::after {
   content: '';
   position: absolute;
   bottom: 0; left: 0;
-  width: 28px; height: 2px;
+  width: 32px; height: 2.5px;
   background: var(--gradient-gold);
   border-radius: 2px;
+}
+
+/* --- Featured Card (Daily Hadith) --- */
+.featured-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(245,240,230,0.92), rgba(255,255,255,0.96));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(184,134,11,0.15);
+  border-radius: 22px;
+  padding: 32px 26px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+[data-theme="dark"] .featured-card {
+  background: linear-gradient(135deg, rgba(30,40,65,0.92), rgba(22,33,62,0.96));
+  border-color: rgba(245,158,11,0.12);
+}
+.featured-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 60px; height: 60px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cpath d='M0 0Q30 0 30 30Q0 30 0 0z' fill='none' stroke='%23b8860b' stroke-width='1' opacity='0.3'/%3E%3Cpath d='M0 0Q20 0 20 20Q0 20 0 0z' fill='none' stroke='%23b8860b' stroke-width='0.7' opacity='0.2'/%3E%3Cpath d='M5 0C5 15 0 15 0 5' fill='none' stroke='%23b8860b' stroke-width='0.5' opacity='0.25'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+.featured-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 60px; height: 60px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cpath d='M60 60Q30 60 30 30Q60 30 60 60z' fill='none' stroke='%23b8860b' stroke-width='1' opacity='0.3'/%3E%3Cpath d='M60 60Q40 60 40 40Q60 40 60 60z' fill='none' stroke='%23b8860b' stroke-width='0.7' opacity='0.2'/%3E%3Cpath d='M55 60C55 45 60 45 60 55' fill='none' stroke='%23b8860b' stroke-width='0.5' opacity='0.25'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+.featured-label {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.featured-card .hadith-card {
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 0;
+  box-shadow: none;
+}
+.featured-card .hadith-card:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 /* --- Animations --- */
@@ -913,6 +1069,15 @@ body::after {
 
 .fade-in { animation: fadeIn 0.3s ease-out; }
 
+@keyframes cardEntrance {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-enter {
+  animation: cardEntrance 0.45s ease-out both;
+}
+
 @keyframes heartPulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.3); }
@@ -922,15 +1087,24 @@ body::after {
 
 /* --- Responsive --- */
 @media (max-width: 480px) {
-  .collections-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .bismillah { font-size: 1.6em; }
-  .hadith-arabic { font-size: 1.2em; }
+  .collections-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .collection-card { padding: 20px 14px 18px; }
+  .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat-card { padding: 16px 10px; }
+  .stat-value { font-size: 1.6em; }
+  .hero-bismillah { font-size: 2.2em; }
+  .hero-header { padding: 36px 20px 56px; }
+  .hadith-arabic { font-size: 1.3em; padding: 22px 18px; }
+  .featured-card { padding: 24px 20px; }
+  .tasbih-counter-ring, .tasbih-counter-ring svg { width: 220px; height: 220px; }
+  .tasbih-phrase { font-size: 2em; }
 }
 
 @media (min-width: 768px) {
   .collections-grid { grid-template-columns: repeat(3, 1fr); }
-  .app-container { padding: 0 24px; }
+  .app-container { padding: 0 28px; }
+  .hero-header { padding: 56px 32px 80px; }
+  .hero-bismillah { font-size: 3.2em; }
 }
 
 /* --- Highlight --- */
@@ -952,14 +1126,14 @@ mark {
 .streak-widget {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   background: var(--bg-card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 16px;
+  border-radius: 18px;
+  padding: 22px;
+  margin-bottom: 20px;
   box-shadow: var(--shadow);
 }
 
@@ -1020,12 +1194,12 @@ mark {
 .collections-tabs {
   display: flex;
   gap: 0;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   background: var(--bg-card);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
 }
 
@@ -1119,9 +1293,9 @@ mark {
   background: var(--bg-card);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-radius: 20px 20px 0 0;
+  border-radius: 24px 24px 0 0;
   border-top: 1px solid var(--glass-border);
-  padding: 28px;
+  padding: 32px 28px;
   width: 100%;
   max-width: 500px;
   max-height: 70vh;
@@ -1299,101 +1473,128 @@ mark {
   justify-content: center;
   min-height: calc(100vh - 140px);
   text-align: center;
+  position: relative;
+}
+
+.tasbih-screen::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 30%, var(--glow-primary) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 70%, var(--glow-accent) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, var(--glow-primary) 0%, transparent 40%);
+  animation: ambientBreathe 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes ambientBreathe {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
 }
 
 .tasbih-counter-ring {
   position: relative;
-  width: 200px;
-  height: 200px;
-  margin: 20px auto;
+  width: 260px;
+  height: 260px;
+  margin: 24px auto;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 0 40px var(--glow-primary));
 }
 
 .tasbih-counter-ring svg {
-  width: 200px;
-  height: 200px;
+  width: 260px;
+  height: 260px;
   transform: rotate(-90deg);
 }
 
-.tasbih-counter-ring .ring-bg { fill: none; stroke: var(--border); stroke-width: 8; }
-.tasbih-counter-ring .ring-progress { fill: none; stroke: var(--primary); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.15s ease; }
+.tasbih-counter-ring .ring-bg { fill: none; stroke: var(--border); stroke-width: 6; }
+.tasbih-counter-ring .ring-progress { fill: none; stroke: var(--primary); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.15s ease; }
 
 .tasbih-count {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 3em;
+  font-size: 3.5em;
   font-weight: 700;
   color: var(--primary);
 }
 
 .tasbih-phrase {
   font-family: 'Amiri', serif;
-  font-size: 1.8em;
+  font-size: 2.4em;
   color: var(--primary);
   direction: rtl;
   margin-bottom: 4px;
+  text-shadow: 0 0 30px var(--glow-primary);
 }
 
 .tasbih-phrase-en {
-  font-size: 0.85em;
-  color: var(--text-secondary);
-  margin-bottom: 20px;
+  font-size: 0.82em;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .tasbih-presets {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: 24px;
-  margin-bottom: 16px;
+  margin-top: 28px;
+  margin-bottom: 20px;
 }
 
 .tasbih-preset-btn {
-  padding: 8px 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  padding: 10px 20px;
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
   background: var(--bg-card);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 0.8em;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.tasbih-preset-btn.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
-
-.tasbih-controls {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.tasbih-ctrl-btn {
-  padding: 8px 20px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg-card);
+  backdrop-filter: blur(8px);
   color: var(--text);
   font-family: inherit;
   font-size: 0.85em;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s;
 }
 
-.tasbih-ctrl-btn:hover { border-color: var(--primary); }
+.tasbih-preset-btn.active {
+  background: var(--gradient-emerald);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 16px var(--glow-primary);
+}
+
+.tasbih-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tasbih-ctrl-btn {
+  padding: 10px 24px;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: var(--bg-card);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.tasbih-ctrl-btn:hover { border-color: var(--primary); color: var(--primary); }
 
 .tasbih-total {
-  margin-top: 16px;
+  margin-top: 20px;
   font-size: 0.8em;
   color: var(--text-muted);
+  letter-spacing: 0.03em;
 }
 
 @keyframes tapPulse {
@@ -1606,21 +1807,27 @@ mark {
 <div class="app-container">
   <!-- HOME SCREEN -->
   <div id="screen-home" class="screen">
-    <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
-    <div class="app-title">Hadith Explorer</div>
-    <div class="app-subtitle">Explore the wisdom of Prophet Muhammad &#xFDFA;</div>
+    <div class="hero-header">
+      <div class="hero-bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+      <div class="hero-title">Hadith Explorer</div>
+      <div class="hero-subtitle">Explore the wisdom of Prophet Muhammad &#xFDFA;</div>
+    </div>
 
     <div id="streak-widget"></div>
 
     <div class="stats-grid" id="home-stats"></div>
 
-    <div class="divider"><span class="divider-icon">&#x2726;</span></div>
-    <div class="section-title">Daily Hadith</div>
-    <div id="daily-hadith-container"></div>
+    <div class="home-section">
+      <div class="ornament-divider"></div>
+      <div class="section-title">Daily Hadith</div>
+      <div id="daily-hadith-container"></div>
+    </div>
 
-    <div class="divider"><span class="divider-icon">&#x2726;</span></div>
-    <div class="section-title">Recently Viewed</div>
-    <div id="recent-container"></div>
+    <div class="home-section">
+      <div class="ornament-divider"></div>
+      <div class="section-title">Recently Viewed</div>
+      <div id="recent-container"></div>
+    </div>
   </div>
 
   <!-- BROWSE SCREEN -->
@@ -2197,9 +2404,11 @@ function navigate(screen) {
   if (el) {
     el.style.display = 'block';
     el.style.opacity = '0';
+    el.style.transform = 'translateY(10px)';
     requestAnimationFrame(() => {
-      el.style.transition = 'opacity 0.25s ease';
+      el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
       el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
     });
   }
 
@@ -2227,9 +2436,9 @@ async function renderHome() {
   const totalNotes = Object.keys(state.notes).length;
 
   document.getElementById('home-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-value">${totalRead}</div><div class="stat-label">Hadiths Read</div></div>
-    <div class="stat-card"><div class="stat-value">${totalBookmarks}</div><div class="stat-label">Bookmarks</div></div>
-    <div class="stat-card"><div class="stat-value">${totalNotes}</div><div class="stat-label">Notes</div></div>
+    <div class="stat-card card-enter" style="animation-delay:0s"><span class="stat-icon">📖</span><div class="stat-value">${totalRead}</div><div class="stat-label">Hadiths Read</div></div>
+    <div class="stat-card card-enter" style="animation-delay:0.06s"><span class="stat-icon">⭐</span><div class="stat-value">${totalBookmarks}</div><div class="stat-label">Bookmarks</div></div>
+    <div class="stat-card card-enter" style="animation-delay:0.12s"><span class="stat-icon">📝</span><div class="stat-value">${totalNotes}</div><div class="stat-label">Notes</div></div>
   `;
 
   // Daily Hadith
@@ -2248,7 +2457,7 @@ async function renderDailyHadith() {
     try {
       const parsed = JSON.parse(stored);
       if (parsed.date === today && parsed.hadith) {
-        container.innerHTML = renderHadithCard(parsed.hadith, parsed.collection, parsed.arabic);
+        container.innerHTML = `<div class="featured-card card-enter"><div class="featured-label">✦ Daily Hadith · ${new Date().toLocaleDateString('en', {month:'short',day:'numeric'})}</div>${renderHadithCard(parsed.hadith, parsed.collection, parsed.arabic)}</div>`;
         return;
       }
     } catch(e) {}
@@ -2283,7 +2492,7 @@ async function renderDailyHadith() {
     const hadith = data.hadiths ? data.hadiths[0] : data;
     if (hadith) {
       localStorage.setItem('he_daily', JSON.stringify({ date: today, hadith, collection: coll, arabic: arabicText }));
-      container.innerHTML = renderHadithCard(hadith, coll, arabicText);
+      container.innerHTML = `<div class="featured-card card-enter"><div class="featured-label">✦ Daily Hadith · ${new Date().toLocaleDateString('en', {month:'short',day:'numeric'})}</div>${renderHadithCard(hadith, coll, arabicText)}</div>`;
     }
   } catch(e) {
     container.innerHTML = '<div class="error-state"><p>Could not load daily hadith</p><button class="btn btn-outline" onclick="renderDailyHadith()">Retry</button></div>';
@@ -2350,12 +2559,11 @@ function renderCollections() {
     const read = getReadCount(key);
     const pct = Math.min(100, (read / info.hadiths * 100)).toFixed(1);
 
-    html += `<div class="collection-card" data-action="browse-collection" data-collection="${key}">
+    html += `<div class="collection-card card-enter" style="animation-delay:${Object.keys(COLLECTIONS).indexOf(key) * 0.05}s" data-action="browse-collection" data-collection="${key}">
       <div class="collection-arabic">${info.arabic}</div>
       <div class="collection-name">${info.name}</div>
       <div class="collection-count">${info.hadiths.toLocaleString()} hadiths</div>
-      <div class="collection-progress"><div class="collection-progress-bar" style="width:${pct}%"></div></div>
-      <div class="collection-count" style="margin-top:4px">${read} read (${pct}%)</div>
+      ${read > 0 ? `<div class="collection-count" style="margin-top:6px;color:var(--primary);font-weight:500">${read} read</div>` : ''}
     </div>`;
   }
 
