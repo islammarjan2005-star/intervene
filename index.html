@@ -833,8 +833,569 @@ mark {
 }
 .about-link:hover { text-decoration: underline; }
 
+/* --- Streak Widget --- */
+.streak-widget {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.streak-ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.streak-ring svg { width: 72px; height: 72px; transform: rotate(-90deg); }
+.streak-ring .ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+.streak-ring .ring-progress { fill: none; stroke: var(--primary); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+.streak-ring-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: 0.75em;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.1;
+}
+.streak-ring-text .ring-count { font-size: 1.6em; display: block; }
+
+.streak-info { flex: 1; }
+.streak-info-title { font-weight: 600; font-size: 0.95em; margin-bottom: 4px; }
+.streak-info-sub { font-size: 0.8em; color: var(--text-secondary); }
+.streak-fire { font-size: 1.2em; margin-right: 2px; }
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #ff6b35, #f7931a);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+/* --- Goal Celebration --- */
+@keyframes celebrate {
+  0% { transform: translateX(-50%) translateY(0) scale(0.8); opacity: 0; }
+  20% { transform: translateX(-50%) translateY(0) scale(1.1); opacity: 1; }
+  80% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(-20px) scale(1); opacity: 0; }
+}
+.toast.celebrate {
+  background: linear-gradient(135deg, #0d6b3d, #15884e);
+  color: white;
+  font-weight: 600;
+  animation: celebrate 2.5s ease forwards;
+}
+
+/* --- Custom Collections --- */
+.collections-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.collections-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.collections-tab.active {
+  background: var(--primary);
+  color: white;
+}
+
+.custom-collection-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.custom-collection-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-lg);
+}
+
+.custom-collection-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3em;
+  flex-shrink: 0;
+}
+
+.custom-collection-info { flex: 1; }
+.custom-collection-name { font-weight: 600; font-size: 0.9em; }
+.custom-collection-count { font-size: 0.75em; color: var(--text-muted); margin-top: 2px; }
+.custom-collection-delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 1.1em;
+  transition: color 0.2s;
+}
+.custom-collection-delete:hover { color: #e74c3c; }
+
+/* --- Modal / Overlay --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 3000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border-radius: 16px 16px 0 0;
+  padding: 24px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 70vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+}
+
+.modal-overlay.show .modal-content {
+  transform: translateY(0);
+}
+
+.modal-title {
+  font-weight: 700;
+  font-size: 1.1em;
+  margin-bottom: 16px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9em;
+  background: var(--bg);
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.modal-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-list-item:hover {
+  border-color: var(--primary);
+  background: var(--bg);
+}
+
+/* --- Notes --- */
+.hadith-note-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.hadith-note-btn.has-note { color: var(--accent); border-color: var(--accent); }
+.hadith-note-btn:hover { border-color: var(--accent); color: var(--accent); }
+.hadith-note-btn svg { width: 16px; height: 16px; }
+
+.note-area {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+.note-textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85em;
+  background: var(--bg);
+  color: var(--text);
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.note-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.note-label {
+  font-size: 0.7em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* --- Share as Image --- */
+.share-image-canvas {
+  display: none;
+}
+
+/* --- Recent Searches --- */
+.recent-searches {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.recent-search-chip {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.78em;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.recent-search-chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* --- Grade Filter --- */
+.grade-filter-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.grade-filter-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.78em;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.grade-filter-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* --- Tasbih Counter --- */
+.tasbih-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 140px);
+  text-align: center;
+}
+
+.tasbih-counter-ring {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 20px auto;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tasbih-counter-ring svg {
+  width: 200px;
+  height: 200px;
+  transform: rotate(-90deg);
+}
+
+.tasbih-counter-ring .ring-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+.tasbih-counter-ring .ring-progress { fill: none; stroke: var(--primary); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.15s ease; }
+
+.tasbih-count {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3em;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.tasbih-phrase {
+  font-family: 'Amiri', serif;
+  font-size: 1.8em;
+  color: var(--primary);
+  direction: rtl;
+  margin-bottom: 4px;
+}
+
+.tasbih-phrase-en {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.tasbih-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.tasbih-preset-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tasbih-preset-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.tasbih-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tasbih-ctrl-btn {
+  padding: 8px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tasbih-ctrl-btn:hover { border-color: var(--primary); }
+
+.tasbih-total {
+  margin-top: 16px;
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+@keyframes tapPulse {
+  0% { transform: translate(-50%,-50%) scale(1); }
+  50% { transform: translate(-50%,-50%) scale(1.05); }
+  100% { transform: translate(-50%,-50%) scale(1); }
+}
+
+.tasbih-count.pulse {
+  animation: tapPulse 0.15s ease;
+}
+
+/* --- Onboarding --- */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.onboarding-slide {
+  text-align: center;
+  max-width: 380px;
+  animation: fadeIn 0.4s ease;
+}
+
+.onboarding-icon {
+  font-size: 4em;
+  margin-bottom: 20px;
+  opacity: 0.9;
+}
+
+.onboarding-title {
+  font-size: 1.5em;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+.onboarding-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 1.8em;
+  color: var(--primary);
+  direction: rtl;
+  margin-bottom: 16px;
+}
+
+.onboarding-text {
+  font-size: 0.95em;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.onboarding-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.3s;
+}
+
+.onboarding-dot.active {
+  background: var(--primary);
+  width: 24px;
+  border-radius: 4px;
+}
+
+.onboarding-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.onboarding-skip {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.9em;
+  cursor: pointer;
+  padding: 10px 20px;
+}
+
+.onboarding-next {
+  background: var(--gradient-emerald);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 32px;
+  font-family: inherit;
+  font-size: 0.95em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.onboarding-next:hover { transform: scale(1.03); }
+
+/* --- Add to Collection button --- */
+.hadith-add-collection-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+.hadith-add-collection-btn:hover { border-color: var(--primary); color: var(--primary); }
+.hadith-add-collection-btn svg { width: 16px; height: 16px; }
+
 /* Hide screens initially */
-#screen-home, #screen-browse, #screen-search, #screen-bookmarks, #screen-settings {
+#screen-home, #screen-browse, #screen-search, #screen-bookmarks, #screen-settings, #screen-tasbih {
   display: none;
 }
 </style>
@@ -847,6 +1408,8 @@ mark {
     <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
     <div class="app-title">Hadith Explorer</div>
     <div class="app-subtitle">Explore the wisdom of Prophet Muhammad &#xFDFA;</div>
+
+    <div id="streak-widget"></div>
 
     <div class="stats-grid" id="home-stats"></div>
 
@@ -872,9 +1435,16 @@ mark {
       <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
       <input type="text" class="search-input" id="search-input" placeholder="Search for hadiths...">
     </div>
+    <div id="recent-searches-container"></div>
     <div class="filter-row">
       <select class="filter-select" id="search-collection-filter">
         <option value="">All Collections</option>
+      </select>
+      <select class="filter-select" id="search-grade-filter">
+        <option value="">All Grades</option>
+        <option value="sahih">Sahih Only</option>
+        <option value="hasan">Hasan</option>
+        <option value="daif">Da'if</option>
       </select>
     </div>
     <div id="search-results"></div>
@@ -883,9 +1453,40 @@ mark {
 
   <!-- BOOKMARKS SCREEN -->
   <div id="screen-bookmarks" class="screen">
-    <div class="section-title" style="margin-bottom:12px">Bookmarks</div>
-    <div class="bookmark-filters" id="bookmark-filters"></div>
-    <div id="bookmarks-content"></div>
+    <div class="section-title" style="margin-bottom:12px">Saved</div>
+    <div class="collections-tabs">
+      <button class="collections-tab active" data-action="saved-tab" data-tab="bookmarks">Bookmarks</button>
+      <button class="collections-tab" data-action="saved-tab" data-tab="collections">Collections</button>
+    </div>
+    <div id="bookmarks-tab-content">
+      <div class="bookmark-filters" id="bookmark-filters"></div>
+      <div id="bookmarks-content"></div>
+    </div>
+    <div id="collections-tab-content" style="display:none">
+      <button class="btn btn-primary" data-action="create-collection" style="width:100%;margin-bottom:16px">+ New Collection</button>
+      <div id="custom-collections-list"></div>
+    </div>
+  </div>
+
+  <!-- TASBIH SCREEN -->
+  <div id="screen-tasbih" class="screen">
+    <div class="tasbih-screen">
+      <div class="tasbih-phrase" id="tasbih-phrase"></div>
+      <div class="tasbih-phrase-en" id="tasbih-phrase-en"></div>
+      <div class="tasbih-counter-ring" id="tasbih-ring">
+        <svg viewBox="0 0 200 200">
+          <circle class="ring-bg" cx="100" cy="100" r="85"/>
+          <circle class="ring-progress" id="tasbih-ring-progress" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="534"/>
+        </svg>
+        <div class="tasbih-count" id="tasbih-count">0</div>
+      </div>
+      <div class="tasbih-presets" id="tasbih-presets"></div>
+      <div class="tasbih-controls">
+        <button class="tasbih-ctrl-btn" data-action="tasbih-reset">Reset</button>
+        <button class="tasbih-ctrl-btn" data-action="tasbih-undo">Undo</button>
+      </div>
+      <div class="tasbih-total" id="tasbih-total"></div>
+    </div>
   </div>
 
   <!-- SETTINGS SCREEN -->
@@ -930,6 +1531,20 @@ mark {
     </div>
 
     <div class="setting-group">
+      <div class="setting-group-title">Reading Goal</div>
+      <div class="setting-row">
+        <span class="setting-label">Daily Hadith Goal</span>
+        <select class="filter-select" id="daily-goal-select" style="flex:initial;width:100px">
+          <option value="3">3 / day</option>
+          <option value="5">5 / day</option>
+          <option value="10">10 / day</option>
+          <option value="20">20 / day</option>
+          <option value="50">50 / day</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="setting-group">
       <div class="setting-group-title">Data</div>
       <div class="setting-row">
         <span class="setting-label">Cache Size</span>
@@ -940,11 +1555,11 @@ mark {
         <button class="btn btn-outline" id="clear-cache-btn" style="padding:6px 14px;font-size:0.8em">Clear</button>
       </div>
       <div class="setting-row">
-        <span class="setting-label">Export Bookmarks</span>
+        <span class="setting-label">Export All Data</span>
         <button class="btn btn-outline" id="export-bookmarks-btn" style="padding:6px 14px;font-size:0.8em">Export</button>
       </div>
       <div class="setting-row">
-        <span class="setting-label">Import Bookmarks</span>
+        <span class="setting-label">Import Data</span>
         <button class="btn btn-outline" id="import-bookmarks-btn" style="padding:6px 14px;font-size:0.8em">Import</button>
         <input type="file" id="import-file-input" accept=".json" style="display:none">
       </div>
@@ -978,7 +1593,11 @@ mark {
   </button>
   <button class="nav-btn" data-screen="bookmarks">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-    <span>Bookmarks</span>
+    <span>Saved</span>
+  </button>
+  <button class="nav-btn" data-screen="tasbih">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+    <span>Tasbih</span>
   </button>
   <button class="nav-btn" data-screen="settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -988,6 +1607,24 @@ mark {
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- Modal Overlay (for Add to Collection) -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-content" id="modal-content"></div>
+</div>
+
+<!-- Onboarding Overlay -->
+<div class="onboarding-overlay" id="onboarding-overlay" style="display:none">
+  <div class="onboarding-slide" id="onboarding-slide"></div>
+  <div class="onboarding-dots" id="onboarding-dots"></div>
+  <div class="onboarding-btns">
+    <button class="onboarding-skip" id="onboarding-skip">Skip</button>
+    <button class="onboarding-next" id="onboarding-next">Next</button>
+  </div>
+</div>
+
+<!-- Canvas for Share as Image -->
+<canvas id="share-canvas" class="share-image-canvas" width="1080" height="1080"></canvas>
 
 <!-- Scroll to Top -->
 <button class="scroll-top" id="scroll-top-btn">
@@ -1030,7 +1667,20 @@ const state = {
   searchDebounce: null,
   searchCache: {},
   dailyHadith: null,
-  bookmarkFilter: 'all'
+  bookmarkFilter: 'all',
+  // New: Streaks & Goals
+  streaks: JSON.parse(localStorage.getItem('he_streaks') || '{"currentStreak":0,"longestStreak":0,"lastReadDate":"","dailyGoal":5,"todayCount":0,"todayDate":""}'),
+  // New: Custom Collections
+  customCollections: JSON.parse(localStorage.getItem('he_customCollections') || '[]'),
+  savedTab: 'bookmarks',
+  viewingCollection: null,
+  // New: Notes
+  notes: JSON.parse(localStorage.getItem('he_notes') || '{}'),
+  // New: Recent Searches
+  recentSearches: JSON.parse(localStorage.getItem('he_recentSearches') || '[]'),
+  searchGradeFilter: '',
+  // New: Tasbih
+  tasbih: JSON.parse(localStorage.getItem('he_tasbih') || '{"count":0,"preset":0,"totalAllTime":0}'),
 };
 
 // ---- API Layer ----
@@ -1108,6 +1758,11 @@ function saveState() {
   localStorage.setItem('he_bookmarks', JSON.stringify(state.bookmarks));
   localStorage.setItem('he_readHistory', JSON.stringify(state.readHistory));
   localStorage.setItem('he_recent', JSON.stringify(state.recentViewed));
+  localStorage.setItem('he_streaks', JSON.stringify(state.streaks));
+  localStorage.setItem('he_customCollections', JSON.stringify(state.customCollections));
+  localStorage.setItem('he_notes', JSON.stringify(state.notes));
+  localStorage.setItem('he_recentSearches', JSON.stringify(state.recentSearches));
+  localStorage.setItem('he_tasbih', JSON.stringify(state.tasbih));
 }
 
 function isBookmarked(collection, hadithNum) {
@@ -1140,8 +1795,73 @@ function trackRead(collection, hadithNum) {
   if (!state.readHistory.includes(key)) {
     state.readHistory.push(key);
     if (state.readHistory.length > 10000) state.readHistory = state.readHistory.slice(-5000);
+    updateStreak();
     saveState();
   }
+}
+
+// ---- Streaks & Daily Goals ----
+function updateStreak() {
+  const today = new Date().toISOString().slice(0, 10);
+  const s = state.streaks;
+
+  if (s.todayDate !== today) {
+    // New day
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (s.lastReadDate === yesterday) {
+      s.currentStreak++;
+    } else if (s.lastReadDate !== today) {
+      s.currentStreak = 1;
+    }
+    s.todayCount = 0;
+    s.todayDate = today;
+  }
+
+  s.todayCount++;
+  s.lastReadDate = today;
+  if (s.currentStreak > s.longestStreak) s.longestStreak = s.currentStreak;
+
+  // Check if daily goal met
+  if (s.todayCount === s.dailyGoal) {
+    showCelebrationToast();
+  }
+}
+
+function showCelebrationToast() {
+  const toast = document.getElementById('toast');
+  toast.textContent = 'Daily goal reached! ' + state.streaks.dailyGoal + ' hadiths read today';
+  toast.className = 'toast celebrate';
+  setTimeout(() => { toast.className = 'toast'; }, 3000);
+}
+
+function renderStreakWidget() {
+  const container = document.getElementById('streak-widget');
+  const s = state.streaks;
+  const today = new Date().toISOString().slice(0, 10);
+  const todayCount = s.todayDate === today ? s.todayCount : 0;
+  const goal = s.dailyGoal || 5;
+  const pct = Math.min(100, (todayCount / goal) * 100);
+  const circumference = 2 * Math.PI * 28;
+  const offset = circumference - (pct / 100) * circumference;
+
+  container.innerHTML = `
+    <div class="streak-widget">
+      <div class="streak-ring">
+        <svg viewBox="0 0 72 72">
+          <circle class="ring-bg" cx="36" cy="36" r="28"/>
+          <circle class="ring-progress" cx="36" cy="36" r="28" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+        </svg>
+        <div class="streak-ring-text">
+          <span class="ring-count">${todayCount}</span>
+          /${goal}
+        </div>
+      </div>
+      <div class="streak-info">
+        <div class="streak-info-title">Daily Reading Goal</div>
+        <div class="streak-info-sub">${todayCount >= goal ? 'Goal reached! Keep going!' : (goal - todayCount) + ' more to reach your goal'}</div>
+        ${s.currentStreak > 0 ? `<div class="streak-badge"><span class="streak-fire">&#x1F525;</span> ${s.currentStreak} day streak</div>` : ''}
+      </div>
+    </div>`;
 }
 
 function addRecentView(collection, hadithNum, text) {
@@ -1202,6 +1922,8 @@ function getGradeClass(grade) {
 // ---- Render Hadith Card ----
 function renderHadithCard(hadith, collection, arabicText, query) {
   const bm = isBookmarked(collection, hadith.hadithnumber);
+  const noteKey = collection + ':' + hadith.hadithnumber;
+  const hasNote = !!state.notes[noteKey];
   const gradeHtml = hadith.grades && hadith.grades.length > 0
     ? hadith.grades.map(g => {
         const name = g.name ? g.name + ': ' : '';
@@ -1212,10 +1934,30 @@ function renderHadithCard(hadith, collection, arabicText, query) {
 
   const textHtml = query ? highlightText(hadith.text || '', query) : escapeHtml(hadith.text || '');
 
+  const noteHtml = `<div class="note-area" id="note-${noteKey.replace(':','-')}" style="display:none">
+    <div class="note-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Personal Note</div>
+    <textarea class="note-textarea" data-note-key="${noteKey}" placeholder="Write your reflection...">${escapeHtml(state.notes[noteKey] || '')}</textarea>
+  </div>`;
+
   return `<div class="hadith-card fade-in" data-collection="${collection}" data-hadith="${hadith.hadithnumber}">
     <div class="hadith-header">
       <div class="hadith-number">${hadith.hadithnumber}</div>
       <div class="hadith-actions">
+        <button class="hadith-note-btn ${hasNote ? 'has-note' : ''}" data-action="toggle-note"
+          data-note-target="note-${noteKey.replace(':','-')}">
+          <svg viewBox="0 0 24 24" fill="${hasNote ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+        <button class="hadith-add-collection-btn" data-action="add-to-collection"
+          data-collection="${collection}" data-hadith="${hadith.hadithnumber}"
+          data-text="${escapeHtml((hadith.text || '').slice(0, 300))}"
+          data-arabic="${escapeHtml((arabicText || '').slice(0, 300))}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            <line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
+          </svg>
+        </button>
         <button class="hadith-action-btn ${bm ? 'bookmarked' : ''}" data-action="bookmark"
           data-collection="${collection}" data-hadith="${hadith.hadithnumber}"
           data-text="${escapeHtml((hadith.text || '').slice(0, 300))}"
@@ -1241,6 +1983,7 @@ function renderHadithCard(hadith, collection, arabicText, query) {
       ${gradeHtml}
       <span class="hadith-ref">${COLLECTIONS[collection]?.name || collection} &middot; Book ${hadith.reference?.book || '?'}, Hadith ${hadith.reference?.hadith || hadith.hadithnumber}</span>
     </div>
+    ${noteHtml}
   </div>`;
 }
 
@@ -1258,21 +2001,26 @@ function navigate(screen) {
   if (screen === 'search') renderSearch();
   if (screen === 'bookmarks') renderBookmarks();
   if (screen === 'settings') renderSettings();
+  if (screen === 'tasbih') renderTasbih();
 
   window.scrollTo(0, 0);
 }
 
 // ---- HOME SCREEN ----
 async function renderHome() {
+  // Streak widget
+  renderStreakWidget();
+
   // Stats
   const totalRead = state.readHistory.length;
   const totalBookmarks = state.bookmarks.length;
   const collectionsExplored = new Set(state.readHistory.map(k => k.split(':')[0])).size;
+  const totalNotes = Object.keys(state.notes).length;
 
   document.getElementById('home-stats').innerHTML = `
     <div class="stat-card"><div class="stat-value">${totalRead}</div><div class="stat-label">Hadiths Read</div></div>
     <div class="stat-card"><div class="stat-value">${totalBookmarks}</div><div class="stat-label">Bookmarks</div></div>
-    <div class="stat-card"><div class="stat-value">${collectionsExplored}</div><div class="stat-label">Collections</div></div>
+    <div class="stat-card"><div class="stat-value">${totalNotes}</div><div class="stat-label">Notes</div></div>
   `;
 
   // Daily Hadith
@@ -1511,12 +2259,39 @@ function renderSearch() {
     }
     filter.innerHTML = opts;
   }
+  renderRecentSearches();
+}
+
+function renderRecentSearches() {
+  const container = document.getElementById('recent-searches-container');
+  if (state.recentSearches.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = '<div class="recent-searches">' +
+    state.recentSearches.map(q => `<button class="recent-search-chip" data-action="recent-search" data-query="${escapeHtml(q)}">${escapeHtml(q)}</button>`).join('') +
+    '</div>';
+}
+
+function addRecentSearch(query) {
+  if (!query || query.length < 2) return;
+  state.recentSearches = state.recentSearches.filter(q => q !== query);
+  state.recentSearches.unshift(query);
+  state.recentSearches = state.recentSearches.slice(0, 10);
+  saveState();
+}
+
+function matchesGradeFilter(hadith, gradeFilter) {
+  if (!gradeFilter) return true;
+  if (!hadith.grades || hadith.grades.length === 0) return false;
+  return hadith.grades.some(g => (g.grade || '').toLowerCase().includes(gradeFilter));
 }
 
 async function performSearch(query) {
   const results = document.getElementById('search-results');
   const status = document.getElementById('search-status');
   const collFilter = document.getElementById('search-collection-filter').value;
+  const gradeFilter = document.getElementById('search-grade-filter').value;
 
   if (!query || query.length < 2) {
     results.innerHTML = '';
@@ -1525,8 +2300,14 @@ async function performSearch(query) {
     return;
   }
 
+  addRecentSearch(query);
+  renderRecentSearches();
+
   results.innerHTML = Array(3).fill('<div class="skeleton skeleton-card"></div>').join('');
   status.style.display = 'none';
+
+  // Check if query is a hadith number
+  const isNumericQuery = /^\d+$/.test(query.trim());
 
   const collections = collFilter ? [collFilter] : Object.keys(COLLECTIONS);
   const queryLower = query.toLowerCase();
@@ -1534,34 +2315,46 @@ async function performSearch(query) {
 
   for (const coll of collections) {
     try {
-      const editionName = state.lang + '-' + coll;
-      let data;
-
-      // Use search cache
-      const cacheKey = editionName;
-      if (state.searchCache[cacheKey]) {
-        data = state.searchCache[cacheKey];
-      } else {
-        try {
-          data = await apiFetch('/editions/' + editionName + '.json');
-        } catch(e) {
-          data = await apiFetch('/editions/eng-' + coll + '.json');
+      if (isNumericQuery) {
+        // Direct hadith number lookup
+        const hadithNum = parseInt(query.trim());
+        if (hadithNum > 0 && hadithNum <= (COLLECTIONS[coll]?.hadiths || 0)) {
+          try {
+            const editionName = state.lang + '-' + coll;
+            const data = await apiFetch('/editions/' + editionName + '/' + hadithNum + '.json');
+            const hadith = data.hadiths ? data.hadiths[0] : data;
+            if (hadith && matchesGradeFilter(hadith, gradeFilter)) {
+              allResults.push({ hadith, collection: coll });
+            }
+          } catch(e) {}
         }
-        state.searchCache[cacheKey] = data;
+      } else {
+        const editionName = state.lang + '-' + coll;
+        let data;
+
+        const cacheKey = editionName;
+        if (state.searchCache[cacheKey]) {
+          data = state.searchCache[cacheKey];
+        } else {
+          try {
+            data = await apiFetch('/editions/' + editionName + '.json');
+          } catch(e) {
+            data = await apiFetch('/editions/eng-' + coll + '.json');
+          }
+          state.searchCache[cacheKey] = data;
+        }
+
+        if (data.hadiths) {
+          const matches = data.hadiths.filter(h =>
+            h.text && h.text.toLowerCase().includes(queryLower) && matchesGradeFilter(h, gradeFilter)
+          ).slice(0, 10);
+
+          matches.forEach(h => allResults.push({ hadith: h, collection: coll }));
+        }
       }
+    } catch(e) {}
 
-      if (data.hadiths) {
-        const matches = data.hadiths.filter(h =>
-          h.text && h.text.toLowerCase().includes(queryLower)
-        ).slice(0, 10); // Max 10 per collection
-
-        matches.forEach(h => allResults.push({ hadith: h, collection: coll }));
-      }
-    } catch(e) {
-      // Skip failed collections
-    }
-
-    if (allResults.length >= 50) break; // Cap total results
+    if (allResults.length >= 50) break;
   }
 
   if (allResults.length === 0) {
@@ -1571,11 +2364,9 @@ async function performSearch(query) {
     return;
   }
 
-  // Fetch Arabic for results if needed
   let html = `<div style="font-size:0.85em;color:var(--text-muted);margin-bottom:12px">${allResults.length} results found</div>`;
-
   allResults.forEach(r => {
-    html += renderHadithCard(r.hadith, r.collection, '', query);
+    html += renderHadithCard(r.hadith, r.collection, '', isNumericQuery ? '' : query);
   });
 
   results.innerHTML = html;
@@ -1621,6 +2412,7 @@ function renderSettings() {
   document.getElementById('theme-toggle').checked = state.theme === 'dark';
   document.querySelectorAll('.font-size-btn').forEach(b => b.classList.toggle('active', b.dataset.size === state.fontSize));
   document.getElementById('language-select').value = state.lang;
+  document.getElementById('daily-goal-select').value = state.streaks.dailyGoal || 5;
   updateCacheSize();
 }
 
@@ -1636,6 +2428,448 @@ function updateCacheSize() {
     : total < 1048576 ? (total / 1024).toFixed(1) + ' KB'
     : (total / 1048576).toFixed(1) + ' MB';
   document.getElementById('cache-size-display').textContent = display;
+}
+
+// ---- Custom Collections ----
+function initDefaultCollections() {
+  if (state.customCollections.length === 0 && !localStorage.getItem('he_collections_init')) {
+    state.customCollections = [
+      { id: 'fav', name: 'Favorites', icon: '\u2764\uFE0F', color: '#e74c3c', hadithKeys: [], createdAt: Date.now() },
+      { id: 'study', name: 'To Study', icon: '\uD83D\uDCDA', color: '#2563eb', hadithKeys: [], createdAt: Date.now() },
+      { id: 'share', name: 'Share Later', icon: '\uD83D\uDCE4', color: '#0d6b3d', hadithKeys: [], createdAt: Date.now() }
+    ];
+    localStorage.setItem('he_collections_init', '1');
+    saveState();
+  }
+}
+
+function renderCustomCollections() {
+  const container = document.getElementById('custom-collections-list');
+
+  if (state.viewingCollection) {
+    const coll = state.customCollections.find(c => c.id === state.viewingCollection);
+    if (!coll) { state.viewingCollection = null; renderCustomCollections(); return; }
+
+    let html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <button class="btn btn-outline" data-action="back-to-collections" style="padding:6px 12px;font-size:0.8em">&larr; Back</button>
+      <span style="font-weight:600">${escapeHtml(coll.name)}</span>
+      <span style="color:var(--text-muted);font-size:0.8em">(${coll.hadithKeys.length})</span>
+    </div>`;
+
+    if (coll.hadithKeys.length === 0) {
+      html += '<div class="empty-state"><div class="empty-state-title">No hadiths yet</div><p>Add hadiths from the browse or search screens</p></div>';
+    } else {
+      coll.hadithKeys.forEach(key => {
+        const [collection, hadithNo] = key.split(':');
+        const bm = state.bookmarks.find(b => b.collection === collection && b.hadithNo === parseInt(hadithNo));
+        const hadith = { hadithnumber: parseInt(hadithNo), text: bm?.text || '', grades: [], reference: {} };
+        html += renderHadithCard(hadith, collection, bm?.arabicText || '');
+      });
+    }
+    container.innerHTML = html;
+    return;
+  }
+
+  if (state.customCollections.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-title">No collections yet</div><p>Create your first collection to organize hadiths</p></div>';
+    return;
+  }
+
+  let html = '';
+  state.customCollections.forEach(coll => {
+    html += `<div class="custom-collection-card" data-action="view-custom-collection" data-id="${coll.id}">
+      <div class="custom-collection-icon" style="background:${coll.color}20;color:${coll.color}">${coll.icon}</div>
+      <div class="custom-collection-info">
+        <div class="custom-collection-name">${escapeHtml(coll.name)}</div>
+        <div class="custom-collection-count">${coll.hadithKeys.length} hadiths</div>
+      </div>
+      <button class="custom-collection-delete" data-action="delete-collection" data-id="${coll.id}">&times;</button>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function showAddToCollectionModal(collection, hadithNum, text, arabic) {
+  const overlay = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  const key = collection + ':' + hadithNum;
+
+  let html = `<div class="modal-title">Add to Collection</div>`;
+
+  if (state.customCollections.length === 0) {
+    html += '<p style="color:var(--text-secondary);margin-bottom:16px">Create your first collection</p>';
+  }
+
+  state.customCollections.forEach(coll => {
+    const exists = coll.hadithKeys.includes(key);
+    html += `<div class="modal-list-item" data-action="add-hadith-to-collection" data-coll-id="${coll.id}" data-key="${key}" data-text="${escapeHtml(text)}" data-arabic="${escapeHtml(arabic)}" data-collection="${collection}" data-hadith="${hadithNum}">
+      <span style="font-size:1.2em">${coll.icon}</span>
+      <span style="flex:1">${escapeHtml(coll.name)}</span>
+      ${exists ? '<span style="color:var(--primary);font-size:0.8em">Added</span>' : ''}
+    </div>`;
+  });
+
+  html += `<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+    <input class="modal-input" id="new-collection-name" placeholder="New collection name...">
+    <button class="btn btn-primary" data-action="create-collection-from-modal" data-key="${key}" data-text="${escapeHtml(text)}" data-arabic="${escapeHtml(arabic)}" data-collection="${collection}" data-hadith="${hadithNum}" style="width:100%">Create & Add</button>
+  </div>`;
+
+  content.innerHTML = html;
+  overlay.classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+// ---- Tasbih Counter ----
+const TASBIH_PRESETS = [
+  { arabic: '\u0633\u064F\u0628\u0652\u062D\u064E\u0627\u0646\u064E \u0627\u0644\u0644\u0647', english: 'SubhanAllah', target: 33 },
+  { arabic: '\u0627\u0644\u0652\u062D\u064E\u0645\u0652\u062F\u064F \u0644\u0644\u0647', english: 'Alhamdulillah', target: 33 },
+  { arabic: '\u0627\u0644\u0644\u0647\u064F \u0623\u064E\u0643\u0652\u0628\u064E\u0631', english: 'Allahu Akbar', target: 34 },
+  { arabic: '\u0644\u0627 \u0625\u0650\u0644\u064E\u0647\u064E \u0625\u0650\u0644\u0651\u0627 \u0627\u0644\u0644\u0647', english: 'La ilaha illallah', target: 100 },
+];
+
+function renderTasbih() {
+  const preset = TASBIH_PRESETS[state.tasbih.preset] || TASBIH_PRESETS[0];
+  document.getElementById('tasbih-phrase').textContent = preset.arabic;
+  document.getElementById('tasbih-phrase-en').textContent = preset.english + ' (' + preset.target + ')';
+  updateTasbihDisplay();
+
+  let presetsHtml = '';
+  TASBIH_PRESETS.forEach((p, i) => {
+    presetsHtml += `<button class="tasbih-preset-btn ${i === state.tasbih.preset ? 'active' : ''}" data-action="tasbih-preset" data-preset="${i}">${p.english}</button>`;
+  });
+  document.getElementById('tasbih-presets').innerHTML = presetsHtml;
+  document.getElementById('tasbih-total').textContent = 'All-time total: ' + state.tasbih.totalAllTime.toLocaleString();
+}
+
+function updateTasbihDisplay() {
+  const preset = TASBIH_PRESETS[state.tasbih.preset] || TASBIH_PRESETS[0];
+  const count = state.tasbih.count;
+  const target = preset.target;
+  const pct = Math.min(100, (count / target) * 100);
+  const circumference = 2 * Math.PI * 85;
+  const offset = circumference - (pct / 100) * circumference;
+
+  document.getElementById('tasbih-count').textContent = count;
+  document.getElementById('tasbih-ring-progress').setAttribute('stroke-dashoffset', offset);
+  document.getElementById('tasbih-total').textContent = 'All-time total: ' + state.tasbih.totalAllTime.toLocaleString();
+}
+
+function incrementTasbih() {
+  state.tasbih.count++;
+  state.tasbih.totalAllTime++;
+
+  const countEl = document.getElementById('tasbih-count');
+  countEl.classList.remove('pulse');
+  void countEl.offsetWidth;
+  countEl.classList.add('pulse');
+
+  const preset = TASBIH_PRESETS[state.tasbih.preset] || TASBIH_PRESETS[0];
+  if (state.tasbih.count === preset.target) {
+    showToast(preset.english + ' completed!');
+  }
+
+  if (navigator.vibrate) navigator.vibrate(15);
+  updateTasbihDisplay();
+  saveState();
+}
+
+// ---- Share as Image (Canvas API) ----
+async function shareAsImage(collection, hadithNum, text, arabicText) {
+  const canvas = document.getElementById('share-canvas');
+  const ctx = canvas.getContext('2d');
+  const w = 1080, h = 1080;
+
+  const isDark = state.theme === 'dark';
+  const bgColor = isDark ? '#1a1a2e' : '#faf8f5';
+  const textColor = isDark ? '#e8e8f0' : '#1a1a2e';
+  const primaryColor = isDark ? '#2ecc71' : '#0d6b3d';
+  const accentColor = isDark ? '#f1c40f' : '#c5a028';
+
+  // Background
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, w, h);
+
+  // Border pattern
+  ctx.strokeStyle = accentColor;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(30, 30, w - 60, h - 60);
+  ctx.strokeStyle = primaryColor;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(40, 40, w - 80, h - 80);
+
+  // Corner ornaments
+  const corners = [[50, 50], [w - 50, 50], [50, h - 50], [w - 50, h - 50]];
+  ctx.fillStyle = accentColor;
+  corners.forEach(([cx, cy]) => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Top decorative line
+  ctx.fillStyle = accentColor;
+  ctx.fillRect(80, 80, w - 160, 3);
+
+  let y = 130;
+
+  // Bismillah
+  ctx.fillStyle = primaryColor;
+  ctx.font = '36px Amiri, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('\u0628\u0650\u0633\u0652\u0645\u0650 \u0627\u0644\u0644\u0647\u0650 \u0627\u0644\u0631\u0651\u064E\u062D\u0652\u0645\u064E\u0646\u0650 \u0627\u0644\u0631\u0651\u064E\u062D\u0650\u064A\u0645\u0650', w / 2, y);
+  y += 50;
+
+  // Divider
+  ctx.fillStyle = accentColor;
+  ctx.fillRect(w / 2 - 60, y, 120, 2);
+  y += 40;
+
+  // Arabic text
+  if (arabicText) {
+    ctx.fillStyle = primaryColor;
+    ctx.font = '32px Amiri, serif';
+    ctx.textAlign = 'center';
+    ctx.direction = 'rtl';
+    const arabicLines = wrapText(ctx, arabicText, w - 160, 32);
+    arabicLines.forEach(line => {
+      if (y < h - 200) { ctx.fillText(line, w / 2, y); y += 46; }
+    });
+    ctx.direction = 'ltr';
+    y += 20;
+  }
+
+  // Divider
+  ctx.fillStyle = accentColor;
+  ctx.fillRect(w / 2 - 40, y, 80, 1);
+  y += 30;
+
+  // Translation
+  if (text) {
+    ctx.fillStyle = textColor;
+    ctx.font = '24px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    const engLines = wrapText(ctx, text, w - 160, 24);
+    engLines.forEach(line => {
+      if (y < h - 120) { ctx.fillText(line, w / 2, y); y += 34; }
+    });
+  }
+
+  // Bottom bar
+  ctx.fillStyle = accentColor;
+  ctx.fillRect(80, h - 100, w - 160, 2);
+
+  // Collection + Hadith number
+  ctx.fillStyle = primaryColor;
+  ctx.font = '20px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  const collName = COLLECTIONS[collection]?.name || collection;
+  ctx.fillText(collName + '  \u00B7  Hadith ' + hadithNum, w / 2, h - 65);
+
+  // App branding
+  ctx.fillStyle = accentColor;
+  ctx.font = '16px Inter, sans-serif';
+  ctx.fillText('Hadith Explorer', w / 2, h - 40);
+
+  // Convert to blob and share/download
+  canvas.toBlob(async function(blob) {
+    const file = new File([blob], 'hadith-' + collection + '-' + hadithNum + '.png', { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Hadith ' + hadithNum });
+        return;
+      } catch(e) {}
+    }
+
+    // Fallback: download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Image downloaded!');
+  }, 'image/png');
+}
+
+function wrapText(ctx, text, maxWidth, fontSize) {
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  words.forEach(word => {
+    const testLine = currentLine ? currentLine + ' ' + word : word;
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  });
+  if (currentLine) lines.push(currentLine);
+  return lines.slice(0, 15); // Max 15 lines
+}
+
+// ---- Onboarding ----
+const ONBOARDING_SLIDES = [
+  {
+    icon: '\u2728',
+    arabic: '\u0628\u0650\u0633\u0652\u0645\u0650 \u0627\u0644\u0644\u0647\u0650 \u0627\u0644\u0631\u0651\u064E\u062D\u0652\u0645\u064E\u0646\u0650 \u0627\u0644\u0631\u0651\u064E\u062D\u0650\u064A\u0645\u0650',
+    title: 'Welcome to Hadith Explorer',
+    text: 'Your personal companion for exploring the wisdom and teachings of Prophet Muhammad \uFDFA'
+  },
+  {
+    icon: '\uD83D\uDCDA',
+    title: 'Explore 36,000+ Hadiths',
+    text: 'Browse through 10 major authenticated collections including Sahih al-Bukhari, Sahih Muslim, and more. Available in 9 languages.'
+  },
+  {
+    icon: '\uD83D\uDCDD',
+    title: 'Study & Organize',
+    text: 'Bookmark hadiths, create personal collections, take notes, and track your daily reading progress with streaks.'
+  },
+  {
+    icon: '\uD83D\uDE80',
+    title: 'Ready to Begin',
+    text: 'Set your preferred language and theme in Settings. Your reading journey starts now!'
+  }
+];
+
+let onboardingStep = 0;
+
+function showOnboarding() {
+  if (localStorage.getItem('he_onboarded')) return;
+  document.getElementById('onboarding-overlay').style.display = 'flex';
+  renderOnboardingSlide();
+}
+
+function renderOnboardingSlide() {
+  const slide = ONBOARDING_SLIDES[onboardingStep];
+  const slideEl = document.getElementById('onboarding-slide');
+  slideEl.innerHTML = `
+    <div class="onboarding-icon">${slide.icon}</div>
+    ${slide.arabic ? `<div class="onboarding-arabic">${slide.arabic}</div>` : ''}
+    <div class="onboarding-title">${slide.title}</div>
+    <div class="onboarding-text">${slide.text}</div>
+  `;
+
+  const dotsEl = document.getElementById('onboarding-dots');
+  dotsEl.innerHTML = ONBOARDING_SLIDES.map((_, i) =>
+    `<div class="onboarding-dot ${i === onboardingStep ? 'active' : ''}"></div>`
+  ).join('');
+
+  const nextBtn = document.getElementById('onboarding-next');
+  nextBtn.textContent = onboardingStep === ONBOARDING_SLIDES.length - 1 ? 'Get Started' : 'Next';
+}
+
+function advanceOnboarding() {
+  onboardingStep++;
+  if (onboardingStep >= ONBOARDING_SLIDES.length) {
+    dismissOnboarding();
+    return;
+  }
+  renderOnboardingSlide();
+}
+
+function dismissOnboarding() {
+  document.getElementById('onboarding-overlay').style.display = 'none';
+  localStorage.setItem('he_onboarded', '1');
+}
+
+// ---- PWA Support ----
+function initPWA() {
+  // Inline Web App Manifest as data URI
+  const manifest = {
+    name: 'Hadith Explorer',
+    short_name: 'Hadith',
+    description: 'Explore 36,000+ authenticated Hadiths from major Islamic collections',
+    start_url: '.',
+    display: 'standalone',
+    background_color: '#faf8f5',
+    theme_color: '#0d6b3d',
+    icons: [{
+      src: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="80" fill="#0d6b3d"/><text x="256" y="340" text-anchor="middle" font-family="serif" font-size="280" fill="#c5a028">\u0647</text></svg>'),
+      sizes: 'any',
+      type: 'image/svg+xml'
+    }]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const manifestUrl = URL.createObjectURL(manifestBlob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = manifestUrl;
+  document.head.appendChild(link);
+
+  // Apple meta tags
+  const appleMeta = document.createElement('meta');
+  appleMeta.name = 'apple-mobile-web-app-capable';
+  appleMeta.content = 'yes';
+  document.head.appendChild(appleMeta);
+
+  const appleStatus = document.createElement('meta');
+  appleStatus.name = 'apple-mobile-web-app-status-bar-style';
+  appleStatus.content = 'default';
+  document.head.appendChild(appleStatus);
+
+  const themeColor = document.createElement('meta');
+  themeColor.name = 'theme-color';
+  themeColor.content = '#0d6b3d';
+  document.head.appendChild(themeColor);
+
+  // Register inline service worker
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      const CACHE_NAME = 'hadith-explorer-v1';
+      const CACHE_URLS = ['.'];
+
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(CACHE_URLS)));
+        self.skipWaiting();
+      });
+
+      self.addEventListener('activate', e => {
+        e.waitUntil(caches.keys().then(keys => Promise.all(
+          keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+        )));
+        self.clients.claim();
+      });
+
+      self.addEventListener('fetch', e => {
+        const url = new URL(e.request.url);
+        // Cache-first for the app itself
+        if (url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/')) {
+          e.respondWith(
+            caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+              const clone = res.clone();
+              caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+              return res;
+            }))
+          );
+          return;
+        }
+        // Network-first for API, cache fallback
+        if (url.hostname.includes('jsdelivr') || url.hostname.includes('githubusercontent')) {
+          e.respondWith(
+            fetch(e.request).then(res => {
+              const clone = res.clone();
+              caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+              return res;
+            }).catch(() => caches.match(e.request))
+          );
+          return;
+        }
+        // Default
+        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+      });
+    `;
+    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  }
 }
 
 // ---- Event Delegation ----
@@ -1692,6 +2926,21 @@ document.addEventListener('click', async function(e) {
   }
 
   if (action === 'share') {
+    // Show share options modal
+    const overlay = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `<div class="modal-title">Share Hadith</div>
+      <div class="modal-list-item" data-action="share-text" data-collection="${btn.dataset.collection}" data-hadith="${btn.dataset.hadith}" data-text="${escapeHtml(btn.dataset.text)}" data-arabic="${escapeHtml(btn.dataset.arabic)}">
+        <span style="font-size:1.2em">\uD83D\uDCCB</span><span style="flex:1">Share as Text</span>
+      </div>
+      <div class="modal-list-item" data-action="share-image" data-collection="${btn.dataset.collection}" data-hadith="${btn.dataset.hadith}" data-text="${escapeHtml(btn.dataset.text)}" data-arabic="${escapeHtml(btn.dataset.arabic)}">
+        <span style="font-size:1.2em">\uD83D\uDDBC\uFE0F</span><span style="flex:1">Share as Image</span>
+      </div>`;
+    overlay.classList.add('show');
+  }
+
+  if (action === 'share-text') {
+    closeModal();
     shareHadith(btn.dataset.collection, btn.dataset.hadith, btn.dataset.text, btn.dataset.arabic);
   }
 
@@ -1741,6 +2990,187 @@ document.addEventListener('click', async function(e) {
     };
     navigate('browse');
   }
+
+  // --- New Actions ---
+
+  // Toggle note area
+  if (action === 'toggle-note') {
+    const noteArea = document.getElementById(btn.dataset.noteTarget);
+    if (noteArea) noteArea.style.display = noteArea.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // Add to collection
+  if (action === 'add-to-collection') {
+    showAddToCollectionModal(btn.dataset.collection, parseInt(btn.dataset.hadith), btn.dataset.text, btn.dataset.arabic);
+  }
+
+  // Add hadith to collection from modal
+  if (action === 'add-hadith-to-collection') {
+    const coll = state.customCollections.find(c => c.id === btn.dataset.collId);
+    if (coll) {
+      const key = btn.dataset.key;
+      if (coll.hadithKeys.includes(key)) {
+        coll.hadithKeys = coll.hadithKeys.filter(k => k !== key);
+        showToast('Removed from ' + coll.name);
+      } else {
+        coll.hadithKeys.push(key);
+        // Also bookmark it if not already
+        const collection = btn.dataset.collection;
+        const hadithNum = parseInt(btn.dataset.hadith);
+        if (!isBookmarked(collection, hadithNum)) {
+          toggleBookmark(collection, hadithNum, btn.dataset.text, btn.dataset.arabic);
+        }
+        showToast('Added to ' + coll.name);
+      }
+      saveState();
+      showAddToCollectionModal(btn.dataset.collection, parseInt(btn.dataset.hadith), btn.dataset.text, btn.dataset.arabic);
+    }
+  }
+
+  // Create collection from modal
+  if (action === 'create-collection-from-modal') {
+    const nameInput = document.getElementById('new-collection-name');
+    const name = (nameInput ? nameInput.value : '').trim();
+    if (!name) { showToast('Enter a collection name'); return; }
+    const icons = ['\uD83D\uDCCC', '\u2B50', '\uD83D\uDCA1', '\uD83C\uDF19', '\uD83D\uDCD6', '\uD83D\uDD16'];
+    const colors = ['#e74c3c', '#2563eb', '#0d6b3d', '#8b5cf6', '#f59e0b', '#06b6d4'];
+    const idx = state.customCollections.length % icons.length;
+    const newColl = {
+      id: 'c' + Date.now(),
+      name: name,
+      icon: icons[idx],
+      color: colors[idx],
+      hadithKeys: [btn.dataset.key],
+      createdAt: Date.now()
+    };
+    state.customCollections.push(newColl);
+    // Ensure bookmarked
+    const collection = btn.dataset.collection;
+    const hadithNum = parseInt(btn.dataset.hadith);
+    if (!isBookmarked(collection, hadithNum)) {
+      toggleBookmark(collection, hadithNum, btn.dataset.text, btn.dataset.arabic);
+    }
+    saveState();
+    showToast('Created "' + name + '"');
+    showAddToCollectionModal(btn.dataset.collection, parseInt(btn.dataset.hadith), btn.dataset.text, btn.dataset.arabic);
+  }
+
+  // Saved screen tabs
+  if (action === 'saved-tab') {
+    state.savedTab = btn.dataset.tab;
+    document.querySelectorAll('.collections-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === state.savedTab));
+    document.getElementById('bookmarks-tab-content').style.display = state.savedTab === 'bookmarks' ? 'block' : 'none';
+    document.getElementById('collections-tab-content').style.display = state.savedTab === 'collections' ? 'block' : 'none';
+    if (state.savedTab === 'collections') renderCustomCollections();
+  }
+
+  // Create collection button
+  if (action === 'create-collection') {
+    const overlay = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `<div class="modal-title">New Collection</div>
+      <input class="modal-input" id="new-collection-name-standalone" placeholder="Collection name...">
+      <button class="btn btn-primary" data-action="create-collection-standalone" style="width:100%">Create</button>`;
+    overlay.classList.add('show');
+  }
+
+  if (action === 'create-collection-standalone') {
+    const nameInput = document.getElementById('new-collection-name-standalone');
+    const name = (nameInput ? nameInput.value : '').trim();
+    if (!name) { showToast('Enter a name'); return; }
+    const icons = ['\uD83D\uDCCC', '\u2B50', '\uD83D\uDCA1', '\uD83C\uDF19', '\uD83D\uDCD6', '\uD83D\uDD16'];
+    const colors = ['#e74c3c', '#2563eb', '#0d6b3d', '#8b5cf6', '#f59e0b', '#06b6d4'];
+    const idx = state.customCollections.length % icons.length;
+    state.customCollections.push({
+      id: 'c' + Date.now(), name, icon: icons[idx], color: colors[idx],
+      hadithKeys: [], createdAt: Date.now()
+    });
+    saveState();
+    closeModal();
+    renderCustomCollections();
+    showToast('Collection created!');
+  }
+
+  // View custom collection
+  if (action === 'view-custom-collection') {
+    state.viewingCollection = btn.dataset.id;
+    renderCustomCollections();
+  }
+
+  // Back to collections list
+  if (action === 'back-to-collections') {
+    state.viewingCollection = null;
+    renderCustomCollections();
+  }
+
+  // Delete custom collection
+  if (action === 'delete-collection') {
+    e.stopPropagation();
+    state.customCollections = state.customCollections.filter(c => c.id !== btn.dataset.id);
+    saveState();
+    renderCustomCollections();
+    showToast('Collection deleted');
+  }
+
+  // Share as image
+  if (action === 'share-image') {
+    closeModal();
+    shareAsImage(btn.dataset.collection, btn.dataset.hadith, btn.dataset.text, btn.dataset.arabic);
+  }
+
+  // Recent search chip
+  if (action === 'recent-search') {
+    document.getElementById('search-input').value = btn.dataset.query;
+    performSearch(btn.dataset.query);
+  }
+
+  // Tasbih actions
+  if (action === 'tasbih-reset') {
+    state.tasbih.count = 0;
+    updateTasbihDisplay();
+    saveState();
+  }
+
+  if (action === 'tasbih-undo') {
+    if (state.tasbih.count > 0) {
+      state.tasbih.count--;
+      state.tasbih.totalAllTime = Math.max(0, state.tasbih.totalAllTime - 1);
+      updateTasbihDisplay();
+      saveState();
+    }
+  }
+
+  if (action === 'tasbih-preset') {
+    state.tasbih.preset = parseInt(btn.dataset.preset);
+    state.tasbih.count = 0;
+    saveState();
+    renderTasbih();
+  }
+});
+
+// Modal overlay click to close
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Tasbih ring tap to increment
+document.getElementById('tasbih-ring').addEventListener('click', function() {
+  incrementTasbih();
+});
+
+// Note textarea auto-save
+document.addEventListener('change', function(e) {
+  if (e.target.classList.contains('note-textarea')) {
+    const key = e.target.dataset.noteKey;
+    const value = e.target.value.trim();
+    if (value) {
+      state.notes[key] = value;
+    } else {
+      delete state.notes[key];
+    }
+    saveState();
+    showToast(value ? 'Note saved' : 'Note removed');
+  }
 });
 
 // Search input
@@ -1750,6 +3180,11 @@ document.getElementById('search-input').addEventListener('input', function(e) {
 });
 
 document.getElementById('search-collection-filter').addEventListener('change', function() {
+  const q = document.getElementById('search-input').value.trim();
+  if (q) performSearch(q);
+});
+
+document.getElementById('search-grade-filter').addEventListener('change', function() {
   const q = document.getElementById('search-input').value.trim();
   if (q) performSearch(q);
 });
@@ -1798,20 +3233,25 @@ document.getElementById('clear-cache-btn').addEventListener('click', function() 
   showToast('Cache cleared!');
 });
 
-// Export bookmarks
+// Export all data (bookmarks + collections + notes)
 document.getElementById('export-bookmarks-btn').addEventListener('click', function() {
-  const data = JSON.stringify(state.bookmarks, null, 2);
+  const data = JSON.stringify({
+    bookmarks: state.bookmarks,
+    collections: state.customCollections,
+    notes: state.notes,
+    streaks: state.streaks
+  }, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'hadith-bookmarks.json';
+  a.download = 'hadith-explorer-data.json';
   a.click();
   URL.revokeObjectURL(url);
-  showToast('Bookmarks exported!');
+  showToast('Data exported!');
 });
 
-// Import bookmarks
+// Import data
 document.getElementById('import-bookmarks-btn').addEventListener('click', function() {
   document.getElementById('import-file-input').click();
 });
@@ -1824,18 +3264,35 @@ document.getElementById('import-file-input').addEventListener('change', function
     try {
       const imported = JSON.parse(ev.target.result);
       if (Array.isArray(imported)) {
+        // Legacy format: just bookmarks
         state.bookmarks = imported;
-        saveState();
-        showToast('Imported ' + imported.length + ' bookmarks!');
-        if (state.screen === 'bookmarks') renderBookmarks();
+      } else if (imported && typeof imported === 'object') {
+        if (imported.bookmarks) state.bookmarks = imported.bookmarks;
+        if (imported.collections) state.customCollections = imported.collections;
+        if (imported.notes) state.notes = imported.notes;
+        if (imported.streaks) state.streaks = imported.streaks;
       }
+      saveState();
+      showToast('Data imported!');
+      if (state.screen === 'bookmarks') renderBookmarks();
     } catch(e) {
-      showToast('Invalid bookmark file');
+      showToast('Invalid data file');
     }
   };
   reader.readAsText(file);
   this.value = '';
 });
+
+// Daily goal select
+document.getElementById('daily-goal-select').addEventListener('change', function(e) {
+  state.streaks.dailyGoal = parseInt(e.target.value);
+  saveState();
+  showToast('Daily goal set to ' + e.target.value + ' hadiths');
+});
+
+// Onboarding
+document.getElementById('onboarding-next').addEventListener('click', advanceOnboarding);
+document.getElementById('onboarding-skip').addEventListener('click', dismissOnboarding);
 
 // Scroll to top
 window.addEventListener('scroll', function() {
@@ -1849,7 +3306,10 @@ document.getElementById('scroll-top-btn').addEventListener('click', function() {
 // ---- Init ----
 document.documentElement.setAttribute('data-theme', state.theme);
 document.body.setAttribute('data-font', state.fontSize);
+initDefaultCollections();
+initPWA();
 navigate('home');
+showOnboarding();
 </script>
 </body>
 </html>
